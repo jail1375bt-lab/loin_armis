@@ -113,4 +113,8 @@ addEventListener('touchstart',e=>{const t=e.touches[0];if(t){tx=cx=t.clientX;ty=
 addEventListener('touchmove',e=>{const t=e.touches[0];if(t){tx=t.clientX;ty=t.clientY}},{passive:true});
 (function loop(){cx+=(tx-cx)*0.35;cy+=(ty-cy)*0.35;sight.style.transform='translate('+cx+'px,'+cy+'px)';requestAnimationFrame(loop);})();
 const armSel='a,button';
-docume
+document.addEventListener('mouseover',e=>{if(e.target.closest(armSel))document.body.classList.add('armed')});
+document.addEventListener('mouseout',e=>{if(e.target.closest(armSel))document.body.classList.remove('armed')});
+</script>
+</body>
+</html>

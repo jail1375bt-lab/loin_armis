@@ -73,4 +73,13 @@ function startCheckout(){
        var em=(document.getElementById('cEmail')||{}).value||'';
        stripe.confirmPayment({elements:elements,confirmParams:{return_url:location.origin+'/checkout.html?done=1',payment_method_data:{billing_details:{name:nm,email:em}}},redirect:'if_required'})
         .then(function(res){
-          if(res.error){document.getElementById('err').textContent=r
+          if(res.error){document.getElementById('err').textContent=res.error.message;document.getElementById('payBtn').disabled=false;}
+          else if(res.paymentIntent && (res.paymentIntent.status==='succeeded'||res.paymentIntent.status==='processing')){showDone();}
+        });
+     });
+   })
+   .catch(function(){document.getElementById('err').textContent='通信エラー。サーバー関数(/api)が動いているか確認してください。';});
+}
+</script>
+</body>
+</html>
