@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LOIN ARMIS — ITEM</title>
+<style>
+  @font-face{font-family:'Octin';src:url('OctinCollege.otf') format('opentype');font-display:swap}
+  @font-face{font-family:'Magazine';src:url('Magazine.ttf') format('truetype');font-display:swap}
+  :root{--bg:#fff;--ink:#0a0a0a;--line:#e6e6e6;--hard:#0a0a0a;--muted:#7a7a7a;--accent:#e2231a;--paper:#eeeeec}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:"Helvetica Neue",Arial,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+    background:#fff;color:var(--ink);line-height:1.5;overflow-x:hidden}
+  a{color:inherit;text-decoration:none}
+  img{display:block;width:100%;height:100%;object-fit:cover}
+  svg{display:block}
+
+  /* ドットサイト ポインター */
+  #sight{position:fixed;top:0;left:0;width:46px;height:46px;margin:-23px 0 0 -23px;
+    pointer-events:none;z-index:9999;mix-blend-mode:multiply;transition:width .12s,height .12s,margin .12s}
+  #sight .ring{position:absolute;inset:13px;border:1px solid var(--ink);border-radius:50%}
+  #sight .h,#sight .v{position:absolute;background:var(--ink)}
+  #sight .h{left:3px;right:3px;top:50%;height:1px;margin-top:-.5px}
+  #sight .v{top:3px;bottom:3px;left:50%;width:1px;margin-left:-.5px}
+  #sight .dot{position:absolute;top:50%;left:50%;width:5px;height:5px;margin:-2.5px 0 0 -2.5px;
+    background:var(--accent);border-radius:50%;mix-blend-mode:normal;
+    box-shadow:0 0 4px 1px rgba(226,35,26,.95),0 0 9px 3px rgba(226,35,26,.7),0 0 16px 6px rgba(226,35,26,.4);
+    animation:dotGlow 1.1s ease-in-out infinite}
+  @keyframes dotGlow{0%,100%{box-shadow:0 0 4px 1px rgba(226,35,26,.9),0 0 8px 3px rgba(226,35,26,.5)}
+    50%{box-shadow:0 0 6px 2px rgba(226,35,26,1),0 0 14px 5px rgba(226,35,26,.85),0 0 24px 9px rgba(226,35,26,.5)}}
+  body.armed #sight{width:64px;height:64px;margin:-32px 0 0 -32px}
+  body.armed #sight .ring{border-color:var(--accent)}
+  body.armed #sight .h,body.armed #sight .v{background:var(--accent)}
+  @media (hover:hover) and (pointer:fine){ *{cursor:none !important} }
+
+  /* PS2風 着弾エフェクト */
+  .impact{position:fixed;width:32px;height:32px;margin:-16px 0 0 -16px;z-index:9998;pointer-events:none;
+    image-rendering:pixelated;border-radius:50%;
+    background:radial-gradient(circle,#fff 0 20%,#ff6a55 38%,#e2231a 58%,transparent 70%);
+    animation:impactpop .22s steps(3) forwards}
+  @keyframes impactpop{0%{transform:scale(.3);opacity:1}100%{transform:scale(1.45);opacity:0}}
+  .hole{position:fixed;width:14px;height:14px;margin:-7px 0 0 -7px;z-index:9997;pointer-events:none;
+    image-rendering:pixelated;border-radius:50%;background:#0a0a0a;box-shadow:0 0 0 2px rgba(0,0,0,.45),0 0 7px 2px rgba(0,0,0,.4)}
+  .spark{position:fixed;width:7px;height:7px;z-index:9998;pointer-events:none;background:#ff3326;
+    image-rendering:pixelated;box-shadow:0 0 5px 1px #e2231a}
+  .fxhit{animation:fxshake .2s steps(2) 2}
+  @keyframes fxshake{0%{transform:translate(0,0)}25%{transform:translate(-3px,1px)}
+    50%{transform:translate(3px,-2px)}75%{transform:translate(-2px,-1px)}100%{transform:translate(0,0)}}
+
+  /* ヘッダー */
+  header{position:sticky;top:0;z-index:60;background:#fff;border-bottom:1.5px solid var(--hard)}
+  .bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:16px 18px;max-width:1400px;margin:0 auto}
+  .back{display:flex;align-items:center;gap:8px;font-family:"Octin",monospace;font-size:12px;letter-spacing:.16em}
+  .back:hover{color:var(--accent)}
+  .brand{justify-self:center}
+  .brand img{height:18px;width:auto}
+  .right{display:flex;justify-content:flex-end;align-items:center;gap:14px}
+  .ico{width:22px;height:22px;color:var(--ink)}
+  .cartwrap{position:relative;display:inline-flex}
+  .cartwrap .badge{position:absolute;top:-7px;right:-9px;min-width:16px;height:16px;background:#0a6b2f;color:#fff;
+    border-radius:50%;font-size:9px;font-family:monospace;display:grid;place-items:center;padding:0 3px;line-height:1}
+
+  /* 商品詳細 */
+  .prod{max-width:680px;margin:0 auto;padding:34px 18px 90px;text-align:center}
+  .prod__main{position:relative;aspect-ratio:1/1;border:1.5px solid var(--hard);background:#e4e4e1;
+    display:grid;place-items:center;color:#b7b7b3;font-family:monospace;letter-spacing:.2em;font-size:12px;overflow:hidden}
+  .prod__main img{width:100%;height:100%;object-fit:cover}
+  .prod__main .prod__sold{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80%;height:auto;object-fit:contain;z-index:3;pointer-events:none}
+  .prod__thumbs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:14px 0 30px}
+  .prod__thumbs button{width:50px;height:50px;border:1px solid var(--hard);background:#eee;padding:0;overflow:hidden;
+    color:#b7b7b3;font-family:monospace;font-size:8px}
+  .prod__thumbs button.on{outline:2px solid var(--ink);outline-offset:-1px}
+  .prod__thumbs button img{width:100%;height:100%;object-fit:cover}
+  .prod__name{font-family:"Magazine",sans-serif;font-size:clamp(24px,6.5vw,36px);letter-spacing:.04em;margin-bottom:12px}
+  .prod__price{font-family:"Octin",monospace;font-size:20px;margin-bottom:20px}
+  .prod__price .was{color:var(--muted);text-decoration:line-through;font-size:15px;margin-right:8px}
+  .prod__desc{font-family:"Octin",monospace;font-size:13px;letter-spacing:.06em;line-height:1.7;
+    color:#444;text-transform:uppercase;max-width:42ch;margin:0 auto 26px}
+  .prod__feats{font-family:"Octin",monospace;list-style:none;max-width:44ch;margin:-8px auto 28px;
+    text-align:left;font-size:12.5px;letter-spacing:.03em;line-height:1.75;color:#333}
+  .prod__feats li{padding-left:15px;position:relative}
+  .prod__feats li::before{content:"–";position:absolute;left:0}
+  .prod__sizes{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:26px}
+  .prod__sizes button{font-family:"Octin",monospace;min-width:48px;height:48px;padding:0 8px;border:1px solid var(--hard);
+    border-radius:50%;background:#fff;font-size:14px;letter-spacing:.04em}
+  .prod__sizes button.on{background:var(--ink);color:#fff}
+  .prod__sizes button:disabled{opacity:.3;text-decoration:line-through}
+  .prod__cart{font-family:"Octin",monospace;letter-spacing:.22em;border:1px solid var(--hard);border-radius:32px;
+    padding:16px 46px;background:#fff;font-size:14px}
+  .prod__cart:hover{background:var(--ink);color:#fff}
+  .prod__tools{display:flex;justify-content:space-between;align-items:center;max-width:680px;margin:34px auto 0;padding:0 6px}
+  .prod__tools .tool{width:54px;height:54px;border:1px solid var(--hard);border-radius:50%;background:#fff;
+    display:grid;place-items:center;color:var(--ink)}
+  .prod__tools .tool svg{width:24px;height:24px}
+  .prod__tools .tool.on{background:var(--ink);color:#fff}
+  .prod__chart{max-width:680px;margin:24px auto 0;border:1px solid var(--hard);display:none}
+  .prod__chart.open{display:block}
+  .prod__chart .cbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--hard)}
+  .prod__chart h3{font-size:12px;letter-spacing:.3em}
+  .prod__chart .u{font-family:"Octin",monospace;font-size:11px;color:var(--muted)}
+  table{width:100%;border-collapse:collapse;font-family:"Octin",monospace;font-size:12.5px}
+  th,td{padding:11px 14px;text-align:center;border-bottom:1px solid #ededed}
+  thead th{border-bottom:1px solid var(--hard)}
+  td:first-child,th:first-child{text-align:left;font-weight:700;letter-spacing:.14em}
+
+  /* YOU MAY ALSO LIKE */
+  .more{margin-top:46px;border-top:1px solid var(--hard);padding-top:24px}
+  .more h3{font-family:"Octin",monospace;font-size:11px;letter-spacing:.26em;text-align:left;margin-bottom:16px}
+  .more__scroll{overflow:hidden;touch-action:pan-y}
+  .more__track{display:flex;gap:14px;width:max-content;will-change:transform}
+  .more__card{flex:0 0 auto;width:140px;text-align:left}
+  .more__img{aspect-ratio:3/4;border:1.5px solid var(--hard);background:#e4e4e1;overflow:hidden;
+    display:grid;place-items:center;color:#b7b7b3;font-family:monospace;font-size:10px}
+  .more__name{font-family:"Magazine",sans-serif;font-size:12px;margin-top:8px;line-height:1.2}
+  .more__price{font-family:"Octin",monospace;font-size:11px;color:var(--muted);margin-top:3px}
+
+  footer{border-top:1px solid var(--line);background:#fff}
+  .foot{max-width:1400px;margin:0 auto;padding:34px 18px;font-family:monospace;font-size:11px;color:var(--muted);letter-spacing:.1em}
+</style>
+</head>
+<body>
+<div id="sight" aria-hidden="true"><div class="ring"></div><div class="h"></div><div class="v"></div><div class="dot"></div></div>
+
+<header>
+  <div class="bar">
+    <a class="back" href="index.html"><svg class="ico" style="width:18px;height:18px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 5l-7 7 7 7"/></svg>BACK</a>
+    <a class="brand" href="index.html"><img src="LOIN_ARMIS_LOGO.svg" alt="LOIN ARMIS"></a>
+    <div class="right">
+      <a aria-label="cart" class="cartwrap" href="cart.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg><span class="badge" id="cartBadge">0</span></a>
+    </div>
+  </div>
+</header>
+
+<main class="prod" id="prod"></main>
+
+<footer><div class="foot">LOIN ARMIS © 2026 — ALL RIGHTS RESERVED.</div></footer>
+
+<script src="products.js"></script>
+<script>
+const items=window.PRODUCTS||[];
+const CHART={
+  tops:{head:["SIZE","着丈","身幅","肩幅","袖丈"],rows:[["S",68,52,46,61],["M",71,55,49,63],["L",74,58,52,65],["XL",77,61,55,67]]},
+  bottoms:{head:["SIZE","ウエスト","股上","股下","わたり","裾幅"],rows:[["S",72,28,72,30,18],["M",78,29,74,31,19],["L",84,30,76,33,20],["XL",90,31,78,35,21]]},
+  acc:{head:["SIZE","DETAIL"],rows:[["FREE","ONE SIZE FITS ALL"]]}
+};
+const SIZES={tops:["S","M","L","XL"],bottoms:["S","M","L","XL"],acc:["FREE"]};
+const MANN='<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="4" r="2.3"/><path d="M12 7c-2.1 0-3.1 1.1-3.1 3.1L8 16h1.9l.5-4h.4l-.5 8h3.4l-.5-8h.4l.5 4H16l-.9-5.9C15.1 8.1 14.1 7 12 7z"/></svg>';
+const TRUCK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="6" width="11" height="9"/><path d="M13 9h4l3 3v3h-7z"/><circle cx="6.5" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>';
+
+function getCart(){try{return JSON.parse(localStorage.getItem('la_cart_items')||'[]')||[]}catch(e){return[]}}
+let cart=getCart().length;
+function fireFX(btn){
+  const r=btn.getBoundingClientRect();
+  const ix=r.left+r.width*(0.28+Math.random()*0.44), iy=r.top+r.height/2;
+  const im=document.createElement('div');im.className='impact';im.style.left=ix+'px';im.style.top=iy+'px';document.body.appendChild(im);
+  const hole=document.createElement('div');hole.className='hole';hole.style.left=ix+'px';hole.style.top=iy+'px';document.body.appendChild(hole);
+  hole.animate([{opacity:1},{opacity:1,offset:.7},{opacity:0}],{duration:850,fill:'forwards'});
+  const sparks=[];
+  for(let i=0;i<12;i++){const s=document.createElement('div');s.className='spark';s.style.left=ix+'px';s.style.top=iy+'px';document.body.appendChild(s);sparks.push(s);
+    const a=Math.random()*6.283,d=16+Math.random()*42;
+    s.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${Math.cos(a)*d}px,${Math.sin(a)*d}px) scale(0)`,opacity:0}],{duration:260+Math.random()*220,easing:'steps(5)',fill:'forwards'});}
+  btn.classList.add('fxhit');
+  setTimeout(()=>{btn.classList.remove('fxhit');im.remove();hole.remove();sparks.forEach(x=>x.remove());},900);
+}
+
+function render(i){
+  const it=items[i]; if(!it){location.href='index.html';return;}
+  document.title='LOIN ARMIS — '+it.n;
+  const sizes=it.sizes||SIZES[it.cat]||["FREE"], ch=it.chart||CHART[it.cat]||CHART.acc;
+  const price=it.sale?`<span class="was">${it.was}</span>${it.p}`:it.p;
+  const featHtml=it.features?`<ul class="prod__feats">${it.features.map(f=>`<li>${f}</li>`).join('')}</ul>`:'';
+  const imgs=it.imgs||null;
+  const mainHtml=imgs?`<img id="mainImg" src="${imgs[0]}" alt="${it.n}">`:`[ ${it.n} ]`;
+  const thumbs=imgs?imgs.map((src,k)=>`<button data-src="${src}" class="${k===0?'on':''}"><img src="${src}" alt=""></button>`).join('')
+    :Array.from({length:6},(_,k)=>`<button class="${k===0?'on':''}">0${k+1}</button>`).join('');
+  const sizeBtns=sizes.map(s=>`<button data-s="${s}" ${it.sold?'disabled':''}>${s}</button>`).join('');
+  const chartHead=ch.head.map(h=>`<th>${h}</th>`).join('');
+  const chartRows=ch.rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('');
+  let pool=items.map((x,k)=>k).filter(k=>k!==i);if(!pool.length)pool=[i];
+  while(pool.length<4)pool=pool.concat(pool);
+  const moreCard=k=>{const o=items[k];const im=o.imgs?`<img src="${o.imgs[0]}" alt="${o.n}">`:'<span>PRODUCT</span>';
+    return `<a class="more__card" href="item.html?id=${k}"><div class="more__img">${im}</div><div class="more__name">${o.n}</div><div class="more__price">${o.p}</div></a>`;};
+  const moreHalf=pool.map(moreCard).join('');
+  document.getElementById('prod').innerHTML=`
+    <div class="prod__main">${mainHtml}</div>
+    <div class="prod__thumbs">${thumbs}</div>
+    <h1 class="prod__name">${it.n}</h1>
+    <div class="prod__price">${price}</div>
+    <div class="prod__desc">${it.desc||''}</div>
+    ${featHtml}
+    <div class="prod__sizes">${sizeBtns}</div>
+    <button class="prod__cart" id="addCart" ${it.sold?'disabled':''}>${it.sold?'SOLD OUT':'ADD TO CART'}</button>
+    <div class="prod__tools">
+      <button class="tool" id="sizeGuideBtn">${MANN}</button>
+      <button class="tool">${TRUCK}</button>
+    </div>
+    <div class="prod__chart" id="prodChart">
+      <div class="cbar"><h3>SIZE CHART</h3><span class="u">UNIT: cm</span></div>
+      <table><thead><tr>${chartHead}</tr></thead><tbody>${chartRows}</tbody></table>
+    </div>
+    <div class="more"><h3>YOU MAY ALSO LIKE</h3><div class="more__scroll"><div class="more__track">${moreHalf}${moreHalf}</div></div></div>`;
+  const prod=document.getElementById('prod');
+  prod.querySelectorAll('.prod__sizes button').forEach(b=>b.onclick=()=>{prod.querySelectorAll('.prod__sizes button').forEach(x=>x.classList.remove('on'));b.classList.add('on');});
+  if(imgs)prod.querySelectorAll('.prod__thumbs button').forEach(b=>b.onclick=()=>{prod.querySelectorAll('.prod__thumbs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');const mi=prod.querySelector('#mainImg');if(mi)mi.src=b.dataset.src;});
+  const sg=prod.querySelector('#sizeGuideBtn'),chart=prod.querySelector('#prodChart');
+  sg.onclick=()=>{chart.classList.toggle('open');sg.classList.toggle('on');if(chart.classList.contains('open'))chart.scrollIntoView({behavior:'smooth',block:'nearest'});};
+  const ac=prod.querySelector('#addCart');
+  if(ac&&!it.sold)ac.onclick=()=>{fireFX(ac);
+    const ss=prod.querySelector('.prod__sizes button.on');
+    const arr=getCart();arr.push({id:i,size:ss?ss.dataset.s:(sizes[0]||'')});
+    try{localStorage.setItem('la_cart_items',JSON.stringify(arr))}catch(e){}
+    cart=arr.length;document.getElementById('cartBadge').textContent=cart;
+    ac.textContent='ADDED ✓';setTimeout(()=>{ac.textContent='ADD TO CART'},1100);};
+  const tr=prod.querySelector('.more__track'),sc2=prod.querySelector('.more__scroll');
+  if(tr&&sc2){const half=tr.scrollWidth/2,auto=0.27;
+    let x=0,vel=0,paused=false,dragging=false,moved=false,sX=0,sP=0,lX=0,lT=0;
+    const apply=()=>{x=((x%half)+half)%half;tr.style.transform='translate3d('+(-x)+'px,0,0)';};
+    const loop=()=>{
+      if(!dragging){
+        if(Math.abs(vel)>0.06){x+=vel;vel*=0.95;apply();}
+        else if(!paused){x+=auto;apply();}
+      }
+      requestAnimationFrame(loop);
+    };
+    let downId=null;
+    sc2.addEventListener('pointerdown',e=>{downId=e.pointerId;dragging=false;moved=false;paused=true;vel=0;sX=e.clientX;sP=x;lX=e.clientX;lT=performance.now();});
+    sc2.addEventListener('pointermove',e=>{if(downId===null)return;const dx=e.clientX-sX;
+      if(!dragging){if(Math.abs(dx)>6){dragging=true;moved=true;try{sc2.setPointerCapture(downId)}catch(_){}}else return;}
+      x=sP-dx;apply();const n=performance.now(),dt=n-lT;if(dt>0){vel=Math.max(-45,Math.min(45,-(e.clientX-lX)/dt*16));}lX=e.clientX;lT=n;});
+    tr.addEventListener('click',e=>{if(moved){e.preventDefault();e.stopPropagation();}},true);
+    const end=()=>{downId=null;dragging=false;paused=false;};
+    sc2.addEventListener('pointerup',end);sc2.addEventListener('pointercancel',end);
+    sc2.addEventListener('mouseenter',()=>{paused=true;});
+    sc2.addEventListener('mouseleave',()=>{paused=false;});
+    requestAnimationFrame(loop);}
+}
+const id=parseInt(new URLSearchParams(location.search).get('id'),10)||0;
+render(id);
+document.getElementById('cartBadge').textContent=cart;
+
+/* カーソル */
+const sight=document.getElementById('sight');
+let tx=innerWidth/2,ty=innerHeight/2,cx=tx,cy=ty;
+addEventListener('mousemove',e=>{tx=e.clientX;ty=e.clientY});
+addEventListener('touchstart',e=>{const t=e.touches[0];if(t){tx=cx=t.clientX;ty=cy=t.clientY}},{passive:true});
+addEventListener('touchmove',e=>{const t=e.touches[0];if(t){tx=t.clientX;ty=t.clientY}},{passive:true});
+(function loop(){cx+=(tx-cx)*0.35;cy+=(ty-cy)*0.35;sight.style.transform=`translate(${cx}px,${cy}px)`;requestAnimationFrame(loop);})();
+const armSel='a,button,select,.more__card,th,td';
+document.addEventListener('mouseover',e=>{if(e.target.closest(armSel))document.body.classList.add('armed')});
+document.addEventListener('mouseout',e=>{if(e.target.closest(armSel))document.body.classList.remove('armed')});
+</script>
+</body>
+</html>
