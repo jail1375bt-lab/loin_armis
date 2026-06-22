@@ -63,9 +63,12 @@
 </div></header>
 <main id="cart"></main>
 <footer><div class="foot">LOIN ARMIS © 2026 — ALL RIGHTS RESERVED.</div></footer>
-<script src="products.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="store.js"></script>
 <script>
-const PROD=window.PRODUCTS||[];
+let PROD=[];
+const findP=id=>PROD.find(x=>String(x.id)===String(id));
 const num=s=>parseInt(String(s).replace(/[^0-9]/g,''),10)||0;
 function getCart(){try{return JSON.parse(localStorage.getItem('la_cart_items')||'[]')||[]}catch(e){return[]}}
 function saveCart(a){try{localStorage.setItem('la_cart_items',JSON.stringify(a))}catch(e){}}
@@ -83,12 +86,12 @@ function draw(){
   }
   m.className='has';
   let rows='';
-  arr.forEach((c,idx)=>{const p=PROD[c.id]||{n:'ITEM',p:'',imgs:null};
+  arr.forEach((c,idx)=>{const p=findP(c.id)||{n:'ITEM',p:'',imgs:null};
     const im=p.imgs?('<img src="'+p.imgs[0]+'" alt="'+p.n+'">'):'';
     rows+='<div class="cart__row"><div class="cart__img">'+im+'</div>'
       +'<div class="cart__info"><div class="cart__name">'+p.n+'</div><div class="cart__meta">SIZE: '+(c.size||'-')+'</div></div>'
       +'<div class="cart__price">'+p.p+'</div><button class="cart__rm" data-i="'+idx+'" aria-label="remove">✕</button></div>';});
-  const total=arr.reduce((s,c)=>s+num((PROD[c.id]||{}).p),0);
+  const total=arr.reduce((s,c)=>s+num((findP(c.id)||{}).p),0);
   m.innerHTML='<div class="cart__h">YOUR CART ('+arr.length+')</div>'
     +'<div class="cart__list">'+rows+'</div>'
     +'<div class="cart__total"><span>TOTAL</span><span>¥'+total.toLocaleString()+'</span></div>'
@@ -97,7 +100,7 @@ function draw(){
   m.querySelectorAll('.cart__rm').forEach(b=>b.onclick=()=>{const a=getCart();a.splice(+b.dataset.i,1);saveCart(a);draw();});
   const co=m.querySelector('.cart__co');if(co)co.onclick=checkout;
 }
-draw();
+Store.load().then(function(d){PROD=d;draw();}).catch(function(e){console.error(e);draw();});
 const sight=document.getElementById('sight');
 let tx=innerWidth/2,ty=innerHeight/2,cx=tx,cy=ty;
 addEventListener('mousemove',e=>{tx=e.clientX;ty=e.clientY});
@@ -105,8 +108,4 @@ addEventListener('touchstart',e=>{const t=e.touches[0];if(t){tx=cx=t.clientX;ty=
 addEventListener('touchmove',e=>{const t=e.touches[0];if(t){tx=t.clientX;ty=t.clientY}},{passive:true});
 (function loop(){cx+=(tx-cx)*0.35;cy+=(ty-cy)*0.35;sight.style.transform='translate('+cx+'px,'+cy+'px)';requestAnimationFrame(loop);})();
 const armSel='a,button';
-document.addEventListener('mouseover',e=>{if(e.target.closest(armSel))document.body.classList.add('armed')});
-document.addEventListener('mouseout',e=>{if(e.target.closest(armSel))document.body.classList.remove('armed')});
-</script>
-</body>
-</html>
+docume

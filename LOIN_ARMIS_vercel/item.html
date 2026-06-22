@@ -72,6 +72,7 @@
     color:#b7b7b3;font-family:monospace;font-size:8px}
   .prod__thumbs button.on{outline:2px solid var(--ink);outline-offset:-1px}
   .prod__thumbs button img{width:100%;height:100%;object-fit:cover}
+  .prod__season{font-family:"Octin",monospace;font-size:11px;letter-spacing:.28em;color:var(--muted);margin-bottom:6px}
   .prod__name{font-family:"Magazine",sans-serif;font-size:clamp(24px,6.5vw,36px);letter-spacing:.04em;margin-bottom:12px}
   .prod__price{font-family:"Octin",monospace;font-size:20px;margin-bottom:20px}
   .prod__price .was{color:var(--muted);text-decoration:line-through;font-size:15px;margin-right:8px}
@@ -136,9 +137,11 @@
 
 <footer><div class="foot">LOIN ARMIS © 2026 — ALL RIGHTS RESERVED.</div></footer>
 
-<script src="products.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="store.js"></script>
 <script>
-const items=window.PRODUCTS||[];
+let items=[];
 const CHART={
   tops:{head:["SIZE","着丈","身幅","肩幅","袖丈"],rows:[["S",68,52,46,61],["M",71,55,49,63],["L",74,58,52,65],["XL",77,61,55,67]]},
   bottoms:{head:["SIZE","ウエスト","股上","股下","わたり","裾幅"],rows:[["S",72,28,72,30,18],["M",78,29,74,31,19],["L",84,30,76,33,20],["XL",90,31,78,35,21]]},
@@ -164,27 +167,34 @@ function fireFX(btn){
   setTimeout(()=>{btn.classList.remove('fxhit');im.remove();hole.remove();sparks.forEach(x=>x.remove());},900);
 }
 
-function render(i){
-  const it=items[i]; if(!it){location.href='index.html';return;}
+function render(reqId){
+  const it=items.find(x=>String(x.id)===String(reqId)); if(!it){location.href='index.html';return;}
   document.title='LOIN ARMIS — '+it.n;
-  const sizes=it.sizes||SIZES[it.cat]||["FREE"], ch=it.chart||CHART[it.cat]||CHART.acc;
+  const sizes=(it.sizes&&it.sizes.length)?it.sizes:["OS"];
+  const ss=it.sizeStock||null;
+  const ch=(it.chart&&it.chart.head)?it.chart:null;
+  const hasChart=!!ch;
+  const seasonTag=it.season?`<div class="prod__season">${it.season}</div>`:'';
   const price=it.sale?`<span class="was">${it.was}</span>${it.p}`:it.p;
   const featHtml=it.features?`<ul class="prod__feats">${it.features.map(f=>`<li>${f}</li>`).join('')}</ul>`:'';
   const imgs=it.imgs||null;
   const mainHtml=imgs?`<img id="mainImg" src="${imgs[0]}" alt="${it.n}">`:`[ ${it.n} ]`;
   const thumbs=imgs?imgs.map((src,k)=>`<button data-src="${src}" class="${k===0?'on':''}"><img src="${src}" alt=""></button>`).join('')
     :Array.from({length:6},(_,k)=>`<button class="${k===0?'on':''}">0${k+1}</button>`).join('');
-  const sizeBtns=sizes.map(s=>`<button data-s="${s}" ${it.sold?'disabled':''}>${s}</button>`).join('');
-  const chartHead=ch.head.map(h=>`<th>${h}</th>`).join('');
-  const chartRows=ch.rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('');
-  let pool=items.map((x,k)=>k).filter(k=>k!==i);if(!pool.length)pool=[i];
+  const avail=s=>!it.sold&&!(ss&&(parseInt(ss[s],10)||0)<=0);
+  const firstAvail=sizes.find(avail);
+  const sizeBtns=sizes.map(s=>`<button data-s="${s}" class="${s===firstAvail?'on':''}" ${avail(s)?'':'disabled'}>${s}</button>`).join('');
+  const chartHead=hasChart?ch.head.map(h=>`<th>${h}</th>`).join(''):'';
+  const chartRows=hasChart?ch.rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join(''):'';
+  let pool=items.filter(o=>String(o.id)!==String(it.id));if(!pool.length)pool=[it];
   while(pool.length<4)pool=pool.concat(pool);
-  const moreCard=k=>{const o=items[k];const im=o.imgs?`<img src="${o.imgs[0]}" alt="${o.n}">`:'<span>PRODUCT</span>';
-    return `<a class="more__card" href="item.html?id=${k}"><div class="more__img">${im}</div><div class="more__name">${o.n}</div><div class="more__price">${o.p}</div></a>`;};
+  const moreCard=o=>{const im=o.imgs?`<img src="${o.imgs[0]}" alt="${o.n}">`:'<span>PRODUCT</span>';
+    return `<a class="more__card" href="item.html?id=${o.id}"><div class="more__img">${im}</div><div class="more__name">${o.n}</div><div class="more__price">${o.p}</div></a>`;};
   const moreHalf=pool.map(moreCard).join('');
   document.getElementById('prod').innerHTML=`
     <div class="prod__main">${mainHtml}</div>
     <div class="prod__thumbs">${thumbs}</div>
+    ${seasonTag}
     <h1 class="prod__name">${it.n}</h1>
     <div class="prod__price">${price}</div>
     <div class="prod__desc">${it.desc||''}</div>
@@ -192,23 +202,23 @@ function render(i){
     <div class="prod__sizes">${sizeBtns}</div>
     <button class="prod__cart" id="addCart" ${it.sold?'disabled':''}>${it.sold?'SOLD OUT':'ADD TO CART'}</button>
     <div class="prod__tools">
-      <button class="tool" id="sizeGuideBtn">${MANN}</button>
+      ${hasChart?`<button class="tool" id="sizeGuideBtn">${MANN}</button>`:''}
       <button class="tool">${TRUCK}</button>
     </div>
-    <div class="prod__chart" id="prodChart">
+    ${hasChart?`<div class="prod__chart" id="prodChart">
       <div class="cbar"><h3>SIZE CHART</h3><span class="u">UNIT: cm</span></div>
       <table><thead><tr>${chartHead}</tr></thead><tbody>${chartRows}</tbody></table>
-    </div>
+    </div>`:''}
     <div class="more"><h3>YOU MAY ALSO LIKE</h3><div class="more__scroll"><div class="more__track">${moreHalf}${moreHalf}</div></div></div>`;
   const prod=document.getElementById('prod');
   prod.querySelectorAll('.prod__sizes button').forEach(b=>b.onclick=()=>{prod.querySelectorAll('.prod__sizes button').forEach(x=>x.classList.remove('on'));b.classList.add('on');});
   if(imgs)prod.querySelectorAll('.prod__thumbs button').forEach(b=>b.onclick=()=>{prod.querySelectorAll('.prod__thumbs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');const mi=prod.querySelector('#mainImg');if(mi)mi.src=b.dataset.src;});
   const sg=prod.querySelector('#sizeGuideBtn'),chart=prod.querySelector('#prodChart');
-  sg.onclick=()=>{chart.classList.toggle('open');sg.classList.toggle('on');if(chart.classList.contains('open'))chart.scrollIntoView({behavior:'smooth',block:'nearest'});};
+  if(sg&&chart)sg.onclick=()=>{chart.classList.toggle('open');sg.classList.toggle('on');if(chart.classList.contains('open'))chart.scrollIntoView({behavior:'smooth',block:'nearest'});};
   const ac=prod.querySelector('#addCart');
   if(ac&&!it.sold)ac.onclick=()=>{fireFX(ac);
-    const ss=prod.querySelector('.prod__sizes button.on');
-    const arr=getCart();arr.push({id:i,size:ss?ss.dataset.s:(sizes[0]||'')});
+    const selBtn=prod.querySelector('.prod__sizes button.on');
+    const arr=getCart();arr.push({id:it.id,size:selBtn?selBtn.dataset.s:(firstAvail||sizes[0]||'')});
     try{localStorage.setItem('la_cart_items',JSON.stringify(arr))}catch(e){}
     cart=arr.length;document.getElementById('cartBadge').textContent=cart;
     ac.textContent='ADDED ✓';setTimeout(()=>{ac.textContent='ADD TO CART'},1100);};
@@ -235,8 +245,9 @@ function render(i){
     sc2.addEventListener('mouseleave',()=>{paused=false;});
     requestAnimationFrame(loop);}
 }
-const id=parseInt(new URLSearchParams(location.search).get('id'),10)||0;
-render(id);
+const reqId=new URLSearchParams(location.search).get('id');
+Store.load().then(function(data){ items=data; render(reqId); })
+  .catch(function(e){ console.error(e); document.getElementById('prod').innerHTML='<p style="padding:70px 0;text-align:center;font-family:monospace;letter-spacing:.1em">商品を読み込めませんでした。</p>'; });
 document.getElementById('cartBadge').textContent=cart;
 
 /* カーソル */
@@ -252,3 +263,4 @@ document.addEventListener('mouseout',e=>{if(e.target.closest(armSel))document.bo
 </script>
 </body>
 </html>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  

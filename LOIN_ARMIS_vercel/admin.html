@@ -17,7 +17,7 @@
   input,textarea,select{width:100%;font:inherit;font-size:14px;padding:10px 12px;border:1px solid #bbb;border-radius:6px;background:#fff}
   textarea{min-height:70px;resize:vertical}
   .btn{display:inline-block;background:#0a0a0a;color:#fff;border:none;border-radius:6px;padding:12px 18px;font-size:13px;letter-spacing:.1em;cursor:pointer}
-  .btn.alt{background:#fff;color:#0a0a0a;border:1px solid #0a0a0a}
+  .btn.alt{background:#fff;color:#0a0a0a;border:1px solid #0a0a0a;padding:6px 10px;font-size:11px}
   .btn.del{background:#fff;color:#e2231a;border:1px solid #e2231a}
   .bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:10px;flex-wrap:wrap}
   .bar h2{font-size:14px;letter-spacing:.16em}
@@ -28,12 +28,25 @@
   .imgs .th{position:relative;width:60px;height:76px;border:1px solid #ccc;border-radius:4px;overflow:hidden;background:#eee}
   .imgs .th img{width:100%;height:100%;object-fit:cover;display:block}
   .imgs .th button{position:absolute;top:2px;right:2px;background:#000;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:11px;cursor:pointer;line-height:1}
-  .cardfoot{display:flex;gap:10px;margin-top:14px;align-items:center}
+  .cardfoot{display:flex;gap:10px;margin-top:14px;align-items:center;flex-wrap:wrap}
   .chk{display:flex;align-items:center;gap:6px;font-size:13px}
   .chk input{width:auto}
   .msg{font-size:12px;color:#0a6b2f;margin-left:auto}
   .err{color:#e2231a;font-size:12px;margin-top:8px}
   .muted{color:#888;font-size:12px}
+  .sale-hint{font-size:11px;color:#e2231a;margin-top:4px;min-height:14px}
+  /* size chart editor */
+  .ctbl{width:100%;border-collapse:collapse;margin-top:6px;font-size:12px}
+  .ctbl th,.ctbl td{border:1px solid #ddd;padding:0}
+  .ctbl input{border:none;border-radius:0;padding:7px 4px;font-size:12px;text-align:center;background:transparent}
+  .ctbl th{background:#fafafa;position:relative}
+  .ctbl th input{font-weight:700;letter-spacing:.06em}
+  .ctbl .cdc,.ctbl .cdr{background:none;border:none;color:#e2231a;cursor:pointer;font-size:12px;padding:4px 6px}
+  .chartbtns{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
+  .stockbox{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:6px}
+  .stockbox .si label{margin:0 0 2px}
+  .stockbox .si input{padding:8px}
+  .stockbox .si .z{color:#e2231a}
 </style>
 </head>
 <body>
@@ -53,11 +66,15 @@
   <div id="list"></div>
 </main>
 
+<datalist id="catlist"></datalist>
+<datalist id="seasonlist"></datalist>
+
 <script src="supabase-config.js"></script>
 <script>
 const sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
 const $ = id => document.getElementById(id);
-const CATS=['tops','bottoms','acc'];
+const esc = s => (s==null?'':String(s)).replace(/"/g,'&quot;');
+const CHART_TEMPLATE = ["SIZE","LENGTH","SHOULDER","BODY WIDTH","SLEEVE"];
 
 async function init(){
   const { data:{ session } } = await sb.auth.getSession();
@@ -86,45 +103,73 @@ async function load(){
   render();
 }
 
+function normChart(c){
+  // DB は {head,rows} 形式。編集中は内部的に cols で扱う。
+  const head = c && (Array.isArray(c.head) ? c.head : (Array.isArray(c.cols) ? c.cols : null));
+  if(head) return {cols:head.slice(), rows:(c.rows||[]).map(r=>r.slice())};
+  return {cols:[], rows:[]};
+}
+
 function card(p){
   const imgs=(p.imgs||[]);
   const thumbs=imgs.map((u,i)=>'<div class="th"><img src="'+u+'"><button data-rm="'+i+'">×</button></div>').join('');
   return `<div class="card" data-id="${p.id??''}">
     <div class="row2">
-      <div><label>商品名</label><input class="f-name" value="${(p.name||'').replace(/"/g,'&quot;')}"></div>
+      <div><label>商品名</label><input class="f-name" value="${esc(p.name)}"></div>
       <div><label>価格 (円)</label><input class="f-price" type="number" value="${p.price||0}"></div>
     </div>
-    <div class="row3" style="margin-top:10px">
-      <div><label>カテゴリ</label><select class="f-cat">${CATS.map(c=>'<option '+(p.cat===c?'selected':'')+'>'+c+'</option>').join('')}</select></div>
-      <div><label>在庫数</label><input class="f-stock" type="number" value="${p.stock||0}"></div>
+    <div class="row2" style="margin-top:10px">
+      <div><label>カテゴリ（自由入力 / 既存から選択も可）</label><input class="f-cat" list="catlist" value="${esc(p.cat)}" placeholder="例: tops"></div>
+      <div><label>セール割引 (%) ※0でなし</label><input class="f-sale" type="number" min="0" max="100" value="${p.sale||0}"><div class="sale-hint"></div></div>
+    </div>
+    <div class="row2" style="margin-top:10px">
+      <div><label>シーズン（自由入力 例: SS26）</label><input class="f-season" list="seasonlist" value="${esc(p.season)}" placeholder="例: SS26"></div>
       <div><label>表示順</label><input class="f-sort" type="number" value="${p.sort||0}"></div>
     </div>
-    <label>説明</label><textarea class="f-descr">${(p.descr||'')}</textarea>
-    <label>サイズ（カンマ区切り。空欄ならカテゴリ既定）</label><input class="f-sizes" value="${(p.sizes||[]).join(',')}">
-    <label>画像</label>
+    <label>説明</label><textarea class="f-descr">${esc(p.descr)}</textarea>
+    <label>購入サイズ（カンマ区切り 例: 1,2 / 一点ものは OS）空欄なら OS</label><input class="f-sizes" value="${(p.sizes||[]).join(',')}">
+    <label>サイズ別在庫</label>
+    <div class="stockbox"></div>
+    <button type="button" class="btn alt stockrefresh" style="margin-top:8px">サイズに合わせて在庫欄を更新</button>
+    <label style="margin-top:14px">サイズチャート（採寸表）</label>
+    <div class="chartbox"></div>
+    <div class="chartbtns">
+      <button type="button" class="btn alt caddc">＋ 列</button>
+      <button type="button" class="btn alt caddr">＋ 行</button>
+      <button type="button" class="btn alt ctmpl">標準テンプレを挿入</button>
+      <button type="button" class="btn alt cclear">表を空にする</button>
+    </div>
+    <label style="margin-top:14px">画像</label>
     <div class="imgs">${thumbs}</div>
     <input type="file" class="f-file" accept="image/*" multiple style="margin-top:8px">
     <div class="cardfoot">
       <label class="chk"><input type="checkbox" class="f-sold" ${p.sold?'checked':''}> SOLD OUT</label>
       <button class="btn save">保存</button>
-      <button class="btn del del">削除</button>
+      <button class="btn del">削除</button>
       <span class="msg" style="display:none">保存しました</span>
     </div>
   </div>`;
 }
 
 function render(){
-  $('list').innerHTML = PRODUCTS.map(card).join('') ;
+  const cats=[...new Set(PRODUCTS.map(p=>p.cat).filter(Boolean))];
+  $('catlist').innerHTML = cats.map(c=>'<option value="'+esc(c)+'">').join('');
+  const seasons=[...new Set(PRODUCTS.map(p=>p.season).filter(Boolean))];
+  $('seasonlist').innerHTML = seasons.map(c=>'<option value="'+esc(c)+'">').join('');
+  $('list').innerHTML = PRODUCTS.map(card).join('');
   $('list').querySelectorAll('.card').forEach(bindCard);
 }
 
 function bindCard(el){
   const id = el.dataset.id || null;
-  let imgs = id ? ((PRODUCTS.find(x=>String(x.id)===String(id))||{}).imgs||[]).slice() : [];
+  const prod = id ? (PRODUCTS.find(x=>String(x.id)===String(id))||{}) : {};
+  let imgs = (prod.imgs||[]).slice();
+  let chart = normChart(prod.chart);
+
+  // ---- images ----
   const drawImgs=()=>{ el.querySelector('.imgs').innerHTML = imgs.map((u,i)=>'<div class="th"><img src="'+u+'"><button data-rm="'+i+'">×</button></div>').join(''); bindRm(); };
   function bindRm(){ el.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{ imgs.splice(+b.dataset.rm,1); drawImgs(); }); }
   bindRm();
-  // file upload
   el.querySelector('.f-file').onchange = async (e)=>{
     const files=[...e.target.files]; if(!files.length) return;
     for(const f of files){
@@ -136,17 +181,84 @@ function bindCard(el){
     }
     drawImgs();
   };
-  // save
+
+  // ---- size chart editor ----
+  const box = el.querySelector('.chartbox');
+  function drawChart(){
+    if(!chart.cols.length){ box.innerHTML='<p class="muted">サイズ表なし。「標準テンプレを挿入」か「＋列」で作成できます。</p>'; return; }
+    let h='<table class="ctbl"><thead><tr>';
+    chart.cols.forEach((c,ci)=>{ h+='<th><input class="cc" data-c="'+ci+'" value="'+esc(c)+'"><button type="button" class="cdc" data-c="'+ci+'" title="この列を削除">×</button></th>'; });
+    h+='<th></th></tr></thead><tbody>';
+    chart.rows.forEach((r,ri)=>{
+      h+='<tr>';
+      chart.cols.forEach((c,ci)=>{ h+='<td><input class="cv" data-r="'+ri+'" data-c="'+ci+'" value="'+esc(r[ci])+'"></td>'; });
+      h+='<td><button type="button" class="cdr" data-r="'+ri+'" title="この行を削除">×</button></td></tr>';
+    });
+    h+='</tbody></table>';
+    box.innerHTML=h;
+    box.querySelectorAll('.cc').forEach(i=>i.oninput=()=>{ chart.cols[+i.dataset.c]=i.value; });
+    box.querySelectorAll('.cv').forEach(i=>i.oninput=()=>{ chart.rows[+i.dataset.r][+i.dataset.c]=i.value; });
+    box.querySelectorAll('.cdc').forEach(b=>b.onclick=()=>{ const c=+b.dataset.c; chart.cols.splice(c,1); chart.rows.forEach(r=>r.splice(c,1)); drawChart(); });
+    box.querySelectorAll('.cdr').forEach(b=>b.onclick=()=>{ chart.rows.splice(+b.dataset.r,1); drawChart(); });
+  }
+  drawChart();
+  el.querySelector('.caddc').onclick=()=>{ chart.cols.push(''); chart.rows.forEach(r=>r.push('')); drawChart(); };
+  el.querySelector('.caddr').onclick=()=>{ if(!chart.cols.length) chart.cols=CHART_TEMPLATE.slice(); chart.rows.push(chart.cols.map(()=>'')); drawChart(); };
+  el.querySelector('.ctmpl').onclick=()=>{ chart.cols=CHART_TEMPLATE.slice(); chart.rows=[chart.cols.map(()=>''), chart.cols.map(()=>'')]; drawChart(); };
+  el.querySelector('.cclear').onclick=()=>{ chart.cols=[]; chart.rows=[]; drawChart(); };
+
+  // ---- size stock editor ----
+  const stockBox = el.querySelector('.stockbox');
+  const sizesEl = el.querySelector('.f-sizes');
+  let stockState = (prod.size_stock && typeof prod.size_stock==='object' && !Array.isArray(prod.size_stock)) ? Object.assign({}, prod.size_stock) : {};
+  function sizesForStock(){
+    const raw = sizesEl.value.trim();
+    let list = raw ? raw.split(',').map(s=>s.trim()).filter(Boolean) : [];
+    if(!list.length) list = ['OS'];
+    return list;
+  }
+  function drawStock(){
+    const sizes = sizesForStock();
+    stockBox.innerHTML = sizes.map(s=>{
+      const v = parseInt(stockState[s],10)||0;
+      return '<div class="si"><label>'+esc(s)+(v<=0?' <span class="z">(0=売切)</span>':'')+'</label><input type="number" min="0" data-s="'+esc(s)+'" value="'+v+'"></div>';
+    }).join('');
+    stockBox.querySelectorAll('input').forEach(i=>i.oninput=()=>{ stockState[i.dataset.s]=parseInt(i.value,10)||0; });
+  }
+  drawStock();
+  el.querySelector('.stockrefresh').onclick=drawStock;
+  sizesEl.addEventListener('change', drawStock);
+
+  // ---- sale hint ----
+  const priceI=el.querySelector('.f-price'), saleI=el.querySelector('.f-sale'), hint=el.querySelector('.sale-hint');
+  function updHint(){
+    const pr=parseInt(priceI.value,10)||0, sl=parseInt(saleI.value,10)||0;
+    hint.textContent = (sl>0&&pr>0) ? ('→ '+sl+'%OFF  ¥'+Math.round(pr*(100-sl)/100).toLocaleString()) : '';
+  }
+  priceI.oninput=updHint; saleI.oninput=updHint; updHint();
+
+  // ---- save ----
   el.querySelector('.save').onclick = async ()=>{
     const sizesRaw = el.querySelector('.f-sizes').value.trim();
+    const sizesArr = sizesRaw ? sizesRaw.split(',').map(s=>s.trim()).filter(Boolean) : null;
+    const cleanCols = chart.cols.map(c=>String(c).trim());
+    const hasChart = cleanCols.some(c=>c!=='') && chart.rows.length;
+    // サイズ別在庫を確定（現在表示中のサイズのみ）。総在庫=合計。
+    const curSizes = sizesForStock();
+    const size_stock = {}; let total = 0;
+    curSizes.forEach(s=>{ const q = parseInt(stockState[s],10)||0; size_stock[s]=q; total+=q; });
     const rec = {
       name: el.querySelector('.f-name').value.trim(),
       price: parseInt(el.querySelector('.f-price').value,10)||0,
-      cat: el.querySelector('.f-cat').value,
-      stock: parseInt(el.querySelector('.f-stock').value,10)||0,
+      cat: el.querySelector('.f-cat').value.trim(),
+      season: el.querySelector('.f-season').value.trim(),
+      sale: Math.max(0, Math.min(100, parseInt(el.querySelector('.f-sale').value,10)||0)),
+      stock: total,
+      size_stock: size_stock,
       sort: parseInt(el.querySelector('.f-sort').value,10)||0,
       descr: el.querySelector('.f-descr').value,
-      sizes: sizesRaw ? sizesRaw.split(',').map(s=>s.trim()).filter(Boolean) : null,
+      sizes: sizesArr,
+      chart: hasChart ? {head:cleanCols, rows:chart.rows.map(r=>r.map(v=>String(v).trim()))} : null,
       imgs: imgs,
       sold: el.querySelector('.f-sold').checked
     };
@@ -157,7 +269,8 @@ function bindCard(el){
     const m=el.querySelector('.msg'); m.style.display='inline'; setTimeout(()=>m.style.display='none',1500);
     load();
   };
-  // delete
+
+  // ---- delete ----
   el.querySelector('.del').onclick = async ()=>{
     if(!id){ el.remove(); return; }
     if(!confirm('この商品を削除しますか？')) return;
@@ -168,7 +281,8 @@ function bindCard(el){
 }
 
 $('addBtn').onclick = ()=>{
-  const el=document.createElement('div'); el.innerHTML=card({cat:'tops',stock:0,sort:(PRODUCTS.length+1),imgs:[]});
+  const el=document.createElement('div');
+  el.innerHTML=card({cat:'',sale:0,stock:0,sort:(PRODUCTS.length+1),imgs:[]});
   const node=el.firstElementChild; $('list').prepend(node); bindCard(node);
   node.scrollIntoView({behavior:'smooth'});
 };

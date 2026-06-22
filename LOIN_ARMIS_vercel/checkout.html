@@ -21,6 +21,8 @@
   .row{display:flex;justify-content:space-between;font-family:"Octin",monospace;font-size:13px;padding:10px 0;border-bottom:1px solid var(--line)}
   .total{display:flex;justify-content:space-between;font-family:"Octin",monospace;font-size:16px;letter-spacing:.1em;margin:16px 0 26px;border-top:1.5px solid var(--hard);padding-top:16px}
   #payment-element{margin-bottom:22px}
+  .fl{display:block;font-family:"Octin",monospace;font-size:11px;letter-spacing:.1em;color:var(--muted);margin:10px 0 4px}
+  .fi{width:100%;font:inherit;font-size:14px;padding:11px 12px;border:1px solid var(--hard);border-radius:6px;margin-bottom:6px}
   .pay{font-family:"Octin",monospace;letter-spacing:.22em;font-size:14px;border:1px solid var(--hard);padding:16px 0;background:var(--ink);color:#fff;width:100%}
   .pay:hover{background:#fff;color:var(--ink)}.pay:disabled{opacity:.4}
   .msg{font-family:"Octin",monospace;font-size:13px;letter-spacing:.06em;color:var(--muted);text-align:center;padding:30px 0;line-height:1.8}
@@ -37,23 +39,27 @@
 </div></header>
 <main id="main"></main>
 <footer>LOIN ARMIS © 2026 — SECURE CHECKOUT</footer>
-<script src="products.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="store.js"></script>
 <script src="pay-config.js"></script>
 <script>
-var PROD=window.PRODUCTS||[];
+var PROD=[];
+function findP(id){return PROD.find(function(x){return String(x.id)===String(id);});}
 function getCart(){try{return JSON.parse(localStorage.getItem('la_cart_items')||'[]')||[]}catch(e){return[]}}
 var main=document.getElementById('main');
 var params=new URLSearchParams(location.search);
-if(params.get('payment_intent_client_secret') || params.get('done')){ showDone(); } else { startCheckout(); }
+if(params.get('payment_intent_client_secret') || params.get('done')){ showDone(); }
+else { Store.load().then(function(d){ PROD=d; startCheckout(); }).catch(function(e){ console.error(e); main.innerHTML='<div class="msg">商品情報を読み込めませんでした。<br>時間をおいて再度お試しください。</div>'; }); }
 function showDone(){ localStorage.removeItem('la_cart_items'); main.innerHTML='<div class="done"><h2>THANK YOU</h2><p>ご注文ありがとうございます。確認メールをお送りします。</p><a class="btn" href="index.html">CONTINUE SHOPPING</a></div>'; }
 function startCheckout(){
   var cart=getCart();
   if(!cart.length){ main.innerHTML='<div class="msg">カートが空です。<br><a class="btn" href="index.html">CONTINUE SHOPPING</a></div>'; return; }
   if(!window.STRIPE_PK){ main.innerHTML='<div class="msg">決済キーが未設定です。<br>pay-config.js に Stripe 公開キー(pk_...) を設定してください。</div>'; return; }
   var rows='', total=0;
-  cart.forEach(function(c){var pr=PROD[c.id]; if(!pr)return; var price=pr.price||0; total+=price;
+  cart.forEach(function(c){var pr=findP(c.id); if(!pr||pr.sold)return; var price=pr.now||0; total+=price;
     rows+='<div class="row"><span>'+pr.n+(c.size?(' / '+c.size):'')+'</span><span>¥'+price.toLocaleString()+'</span></div>';});
-  main.innerHTML='<h1>CHECKOUT</h1>'+rows+'<div class="total"><span>TOTAL</span><span>¥'+total.toLocaleString()+'</span></div><form id="pf"><div id="payment-element"></div><button class="pay" id="payBtn" type="submit">PAY ¥'+total.toLocaleString()+'</button><div id="err" class="msg" style="color:var(--accent);padding:12px 0"></div></form>';
+  main.innerHTML='<h1>CHECKOUT</h1>'+rows+'<div class="total"><span>TOTAL</span><span>¥'+total.toLocaleString()+'</span></div><form id="pf"><label class="fl">お名前</label><input class="fi" id="cName" required autocomplete="name"><label class="fl">メールアドレス（領収・コンビニ払い用）</label><input class="fi" id="cEmail" type="email" required autocomplete="email"><div id="payment-element"></div><button class="pay" id="payBtn" type="submit">PAY ¥'+total.toLocaleString()+'</button><div id="err" class="msg" style="color:var(--accent);padding:12px 0"></div></form>';
   var stripe=Stripe(window.STRIPE_PK);
   fetch('/api/create-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:cart})})
    .then(function(r){return r.json();})
@@ -63,15 +69,8 @@ function startCheckout(){
      var pe=elements.create('payment');pe.mount('#payment-element');
      document.getElementById('pf').addEventListener('submit',function(e){
        e.preventDefault();document.getElementById('payBtn').disabled=true;
-       stripe.confirmPayment({elements:elements,confirmParams:{return_url:location.origin+'/checkout.html?done=1'},redirect:'if_required'})
+       var nm=(document.getElementById('cName')||{}).value||'';
+       var em=(document.getElementById('cEmail')||{}).value||'';
+       stripe.confirmPayment({elements:elements,confirmParams:{return_url:location.origin+'/checkout.html?done=1',payment_method_data:{billing_details:{name:nm,email:em}}},redirect:'if_required'})
         .then(function(res){
-          if(res.error){document.getElementById('err').textContent=res.error.message;document.getElementById('payBtn').disabled=false;}
-          else if(res.paymentIntent && (res.paymentIntent.status==='succeeded'||res.paymentIntent.status==='processing')){showDone();}
-        });
-     });
-   })
-   .catch(function(){document.getElementById('err').textContent='通信エラー。サーバー関数(/api)が動いているか確認してください。';});
-}
-</script>
-</body>
-</html>
+          if(res.error){document.getElementById('err').textContent=r

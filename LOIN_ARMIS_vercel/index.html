@@ -412,7 +412,9 @@
   </div>
 </footer>
 
-<script src="products.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="store.js"></script>
 <script>
 /* ===== オープニング ローダー ===== */
 (function(){
@@ -473,8 +475,8 @@ const I={
     legal1:"Impressum",legal2:"AGB",legal3:"Datenschutz"}
 };
 
-/* ===== 商品データ ===== */
-const items=window.PRODUCTS||[];
+/* ===== 商品データ（Supabaseから読み込み） ===== */
+let items=[];
 
 /* カテゴリ別サイズチャート (商品ごとに表示) */
 const CHART={
@@ -486,16 +488,23 @@ const SIZES={tops:["S","M","L","XL"],bottoms:["S","M","L","XL"],acc:["FREE"]};
 
 function renderGrid(){
   document.getElementById('grid').innerHTML=items.map((it,i)=>{
-    const tag=it.sold?'':it.sale?'<span class="tag sale">SALE</span>':'<span class="tag">AW25</span>';
+    const tag=it.sold?'':it.sale?'<span class="tag sale">SALE</span>':`<span class="tag">${it.season||'AW25'}</span>`;
     const price=it.sale?`<span class="was">${it.was}</span><span class="now sale">${it.p}</span>`:`<span class="now">${it.p}</span>`;
     const media=it.imgs?`<img src="${it.imgs[0]}" alt="${it.n}">`:'<div class="swatch">PRODUCT</div>';
     const sold=it.sold?'<img class="soldout" src="soldout.png" alt="SOLD OUT">':'';
-    return `<a class="card" href="item.html?id=${i}"><div class="card__img">${tag}${media}${sold}</div>
+    return `<a class="card" href="item.html?id=${it.id}"><div class="card__img">${tag}${media}${sold}</div>
       <div class="card__body"><div class="card__name">${it.n}</div>
         <div class="card__price">${price}</div></div></a>`;
   }).join('');
 }
-renderGrid();
+/* グリッドは Supabase 読み込み後に描画 */
+Store.load().then(function(data){
+  items=data; renderGrid();
+  if(typeof applyLang==='function'){ var s=document.getElementById('lang'); applyLang(s&&s.value?s.value:'ja'); }
+}).catch(function(e){
+  console.error(e);
+  document.getElementById('grid').innerHTML='<div style="grid-column:1/-1;padding:50px;text-align:center;font-family:monospace;font-size:12px;letter-spacing:.1em">商品を読み込めませんでした。時間をおいて再読み込みしてください。</div>';
+});
 
 /* ===== 商品詳細ビュー ===== */
 let cart=0;
@@ -648,3 +657,4 @@ document.addEventListener('mouseout',e=>{if(e.target.closest(armSel))document.bo
 </script>
 </body>
 </html>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
