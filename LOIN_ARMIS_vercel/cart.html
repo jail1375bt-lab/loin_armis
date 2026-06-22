@@ -100,7 +100,12 @@ function draw(){
   m.querySelectorAll('.cart__rm').forEach(b=>b.onclick=()=>{const a=getCart();a.splice(+b.dataset.i,1);saveCart(a);draw();});
   const co=m.querySelector('.cart__co');if(co)co.onclick=checkout;
 }
-Store.load().then(function(d){PROD=d;draw();}).catch(function(e){console.error(e);draw();});
+draw(); // まず即描画（空表示でも止まらないように）
+if(window.Store && Store.load){
+  Store.load().then(function(d){PROD=d;draw();}).catch(function(e){console.error('[cart]',e);draw();});
+}else{
+  console.error('[cart] Store 未読込（store.js / supabase-js を確認）');
+}
 const sight=document.getElementById('sight');
 let tx=innerWidth/2,ty=innerHeight/2,cx=tx,cy=ty;
 addEventListener('mousemove',e=>{tx=e.clientX;ty=e.clientY});
