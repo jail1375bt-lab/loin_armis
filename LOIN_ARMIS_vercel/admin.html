@@ -75,6 +75,7 @@ const sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
 const $ = id => document.getElementById(id);
 const esc = s => (s==null?'':String(s)).replace(/"/g,'&quot;');
 const CHART_TEMPLATE = ["SIZE","LENGTH","SHOULDER","BODY WIDTH","SLEEVE"];
+const CATEGORIES = ["Tops","Pants","Jacket","Accessory","Other","Object"];
 
 async function init(){
   const { data:{ session } } = await sb.auth.getSession();
@@ -119,7 +120,7 @@ function card(p){
       <div><label>価格 (円)</label><input class="f-price" type="number" value="${p.price||0}"></div>
     </div>
     <div class="row2" style="margin-top:10px">
-      <div><label>カテゴリ（自由入力 / 既存から選択も可）</label><input class="f-cat" list="catlist" value="${esc(p.cat)}" placeholder="例: tops"></div>
+      <div><label>カテゴリ</label><select class="f-cat">${CATEGORIES.map(c=>'<option '+((p.cat||'').toLowerCase()===c.toLowerCase()?'selected':'')+'>'+c+'</option>').join('')}</select></div>
       <div><label>セール割引 (%) ※0でなし</label><input class="f-sale" type="number" min="0" max="100" value="${p.sale||0}"><div class="sale-hint"></div></div>
     </div>
     <div class="row2" style="margin-top:10px">

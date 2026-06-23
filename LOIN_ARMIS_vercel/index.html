@@ -168,7 +168,7 @@
     letter-spacing:.12em;padding:3px 7px;background:#fff}
   .tag.sold{color:#fff;background:var(--ink)}
   .tag.sale{color:#fff;background:var(--accent)}
-  .card__body{padding:12px 12px 18px;display:flex;flex-direction:column;gap:5px;flex:1}
+  .card__body{padding:12px 12px 18px;display:flex;flex-direction:column;gap:5px;flex:1;background:#fff}
   .card{cursor:pointer}
   .card__name{font-family:"Magazine",sans-serif;font-size:15px;line-height:1.25;min-height:34px;letter-spacing:.02em}
   .card__price{font-family:"Octin",monospace;font-size:13px;display:flex;gap:8px;align-items:baseline}
@@ -500,7 +500,7 @@ const SIZES={tops:["S","M","L","XL"],bottoms:["S","M","L","XL"],acc:["FREE"]};
 function getView(){
   const cat=(document.getElementById('catFilter')||{}).value||'';
   const sort=(document.getElementById('sortBy')||{}).value||'default';
-  let v=items.filter(it=>!cat||it.cat===cat);
+  let v=items.filter(it=>!cat||(it.cat||'').toLowerCase()===cat.toLowerCase());
   if(sort==='price-asc') v=v.slice().sort((a,b)=>(a.now||0)-(b.now||0));
   else if(sort==='price-desc') v=v.slice().sort((a,b)=>(b.now||0)-(a.now||0));
   return v;
@@ -509,11 +509,11 @@ function updateCount(n){
   const d=I[curLang]||I.en, sp=(curLang==='ja'||curLang==='zh'||curLang==='ko')?'':' ';
   const el=document.getElementById('cnt'); if(el) el.textContent=String(n).padStart(2,'0')+sp+d.items;
 }
+const CATEGORIES=['Tops','Pants','Jacket','Accessory','Other','Object'];
 function populateCatFilter(){
   const sel=document.getElementById('catFilter'); if(!sel) return;
   const cur=sel.value;
-  const cats=[...new Set(items.map(p=>p.cat).filter(Boolean))];
-  sel.innerHTML='<option value="">ALL</option>'+cats.map(c=>'<option value="'+c+'">'+String(c).toUpperCase()+'</option>').join('');
+  sel.innerHTML='<option value="">ALL</option>'+CATEGORIES.map(c=>'<option value="'+c+'">'+c.toUpperCase()+'</option>').join('');
   if(cur) sel.value=cur;
 }
 function renderGrid(){
