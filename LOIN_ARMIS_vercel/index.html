@@ -417,7 +417,7 @@
   <div class="menu-main">
   <nav class="mnav">
     <a href="index.html"><span class="inner"><span class="mk">–</span><span class="lbl">HOME</span></span></a>
-    <a href="#shop" class="m-close"><span class="inner"><span class="mk">–</span><span class="lbl">ALL GEAR</span></span></a>
+    <a href="#shop" class="m-close m-all"><span class="inner"><span class="mk">–</span><span class="lbl">ALL GEAR</span></span></a>
     <button type="button" class="m-acc" id="catAcc"><span class="inner"><span class="mk">+</span><span class="lbl">CATEGORY</span></span></button>
     <div class="m-sub" id="catSub">
       <a href="#shop" class="m-cat" data-cat="Tops">TOPS</a>
@@ -614,6 +614,7 @@ function fillGrid(){
 }
 (function(){var cf=document.getElementById('catFilter'); if(cf) cf.addEventListener('change',function(){ seasonFilter=''; renderGrid(); }); var sb2=document.getElementById('sortBy'); if(sb2) sb2.addEventListener('change',renderGrid);})();
 document.querySelectorAll('.f-season').forEach(function(a){ a.addEventListener('click',function(){ seasonFilter=this.dataset.season||''; var cf=document.getElementById('catFilter'); if(cf) cf.value=''; searchTerm=''; var si=document.getElementById('searchInput'); if(si) si.value=''; if(typeof renderGrid==='function') renderGrid(); var shop=document.getElementById('shop'); if(shop) setTimeout(function(){shop.scrollIntoView({behavior:'smooth'});},120); }); });
+document.querySelectorAll('.m-all').forEach(function(a){ a.addEventListener('click',function(){ seasonFilter=''; searchTerm=''; var cf=document.getElementById('catFilter'); if(cf) cf.value=''; var si=document.getElementById('searchInput'); if(si) si.value=''; if(typeof renderGrid==='function') renderGrid(); var shop=document.getElementById('shop'); if(shop) setTimeout(function(){shop.scrollIntoView({behavior:'smooth'});},120); }); });
 let _rsT; addEventListener('resize',function(){clearTimeout(_rsT); _rsT=setTimeout(function(){ if(items.length) renderGrid(); },200);});
 /* グリッドは Supabase 読み込み後に描画 */
 Store.load().then(function(data){
