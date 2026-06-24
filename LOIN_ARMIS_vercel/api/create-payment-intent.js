@@ -1,5 +1,3 @@
-// Vercel Serverless Function — Stripe PaymentIntent 作成
-// 価格は必ず Supabase（サーバー側）で再計算する。クライアントの金額は信用しない。
 const Stripe = require('stripe');
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
 const SB_URL = process.env.SUPABASE_URL || 'https://xgyjjuravbbtlsylamfv.supabase.co';
@@ -24,12 +22,12 @@ module.exports = async (req, res) => {
     for (const it of items) {
       const p = map[String(it.id)];
       if (!p) continue;
-      if (p.sold) continue;
+      if (p.sold) continue;                                  // 手動SOLD OUT
       const ss = (p.size_stock && typeof p.size_stock === 'object' && !Array.isArray(p.size_stock)) ? p.size_stock : null;
-      if (ss) {
+      if (ss) {                                              // サイズ別在庫がある場合はそのサイズで判定
         const q = parseInt(ss[it.size], 10) || 0;
         if (q <= 0) continue;
-      } else if (p.stock != null && p.stock <= 0) {
+      } else if (p.stock != null && p.stock <= 0) {          // なければ総在庫で判定
         continue;
       }
       let sale = parseInt(p.sale, 10) || 0;
@@ -38,10 +36,16 @@ module.exports = async (req, res) => {
       amount += unit;
     }
     if (amount <= 0) { res.status(400).json({ error: 'cart is empty' }); return; }
-    const pi = await stripe.paymentIntents.create({
-      amount, currency: 'jpy',
-      automatic_payment_methods: { enabled: true },
-    });
+
+    // ログイン中の会員情報を Stripe に紐付け（メタデータ＋領収メール）
+    const piParams = { amount, currency: 'jpy', automatic_payment_methods: { enabled: true } };
+    const meta = {};
+    if (body.userId) meta.user_id = String(body.userId);
+    if (body.email)  meta.email   = String(body.email);
+    if (Object.keys(meta).length) piParams.metadata = meta;
+    if (body.email) piParams.receipt_email = String(body.email);
+
+    const pi = await stripe.paymentIntents.create(piParams);
     res.status(200).json({ clientSecret: pi.client_secret, amount });
   } catch (e) {
     res.status(500).json({ error: e.message });
