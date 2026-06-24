@@ -75,7 +75,7 @@ const sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
 const $ = id => document.getElementById(id);
 const esc = s => (s==null?'':String(s)).replace(/"/g,'&quot;');
 const CHART_TEMPLATE = ["SIZE","LENGTH","SHOULDER","BODY WIDTH","SLEEVE"];
-const CATEGORIES = ["Tops","Pants","Jacket","Accessory","Other","Object"];
+const CATEGORIES = ["Tops","Pants","Jacket","Accessory","Other","Object","1OF1 + SAMPLE"];
 
 async function init(){
   const { data:{ session } } = await sb.auth.getSession();
