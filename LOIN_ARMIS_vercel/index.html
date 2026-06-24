@@ -141,11 +141,11 @@
   .menu-corner{display:none}
   .menu-corner.tl{top:0;left:0;border-top:1px solid rgba(226,35,26,.45);border-left:1px solid rgba(226,35,26,.45)}
   .menu-corner.br{bottom:0;right:0;border-bottom:1px solid rgba(226,35,26,.45);border-right:1px solid rgba(226,35,26,.45)}
-  .menu-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:2}
-  .menu-top .lalogo{height:34px;width:auto}
-  #menu .close-btn{width:42px;height:42px;display:flex;align-items:center;justify-content:center;
-    border:1px solid rgba(0,0,0,.2);background:none;color:var(--muted);font:inherit;font-size:20px;transition:all .25s}
-  #menu .close-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .menu-top{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:2;padding-bottom:20px;border-bottom:1px solid var(--line);margin-bottom:6px}
+  .menu-top .lalogo{height:28px;width:auto}
+  #menu .close-btn{width:40px;height:40px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+    border:1px solid var(--hard);border-radius:50%;background:none;color:var(--ink);font:inherit;font-size:18px;line-height:1;transition:all .2s}
+  #menu .close-btn:hover{background:var(--ink);color:#fff}
   .menu-main{flex:1;display:flex;flex-direction:column;justify-content:center;gap:22px;position:relative;z-index:2}
   #menu .mnav{display:flex;flex-direction:column;gap:2px}
   #menu .mnav a,#menu .mnav .m-acc{font-family:"OPTITimes",serif;color:var(--ink);font-size:clamp(24px,5vw,40px);
