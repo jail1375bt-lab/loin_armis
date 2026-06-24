@@ -7,6 +7,7 @@
 <style>
   @font-face{font-family:'Octin';src:url('OctinCollege.otf') format('opentype');font-display:swap}
   @font-face{font-family:'Magazine';src:url('Magazine.ttf') format('truetype');font-display:swap}
+  @font-face{font-family:'OPTITimes';src:url('OPTITimes-Roman.otf') format('opentype');font-display:swap}
   :root{--bg:#fff;--ink:#0a0a0a;--line:#e6e6e6;--hard:#0a0a0a;--muted:#7a7a7a;--accent:#e2231a;--paper:#eeeeec}
   *{box-sizing:border-box;margin:0;padding:0}
   html{-webkit-text-size-adjust:100%}
@@ -65,7 +66,7 @@
   .prod{max-width:680px;margin:0 auto;padding:34px 18px 90px;text-align:center}
   .prod__main{position:relative;aspect-ratio:54/71;border:1.5px solid var(--hard);background:#e4e4e1;
     display:grid;place-items:center;color:#b7b7b3;font-family:monospace;letter-spacing:.2em;font-size:12px;overflow:hidden}
-  .prod__main img{width:100%;height:100%;object-fit:cover}
+  .prod__main img{width:100%;height:100%;object-fit:contain}
   .prod__main .prod__sold{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80%;height:auto;object-fit:contain;z-index:3;pointer-events:none}
   .prod__thumbs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:14px 0 30px}
   .prod__thumbs button{width:50px;height:50px;border:1px solid var(--hard);background:#eee;padding:0;overflow:hidden;
@@ -73,7 +74,7 @@
   .prod__thumbs button.on{outline:2px solid var(--ink);outline-offset:-1px}
   .prod__thumbs button img{width:100%;height:100%;object-fit:cover}
   .prod__season{font-family:"Octin",monospace;font-size:11px;letter-spacing:.28em;color:var(--muted);margin-bottom:6px}
-  .prod__name{font-family:"Magazine",sans-serif;font-size:clamp(24px,6.5vw,36px);letter-spacing:.04em;margin-bottom:12px}
+  .prod__name{font-family:"OPTITimes",serif;font-size:clamp(26px,6.5vw,40px);letter-spacing:.03em;margin-bottom:12px}
   .prod__price{font-family:"Octin",monospace;font-size:20px;margin-bottom:20px}
   .prod__price .was{color:var(--muted);text-decoration:line-through;font-size:15px;margin-right:8px}
   .prod__desc{font-family:"Octin",monospace;font-size:13px;letter-spacing:.06em;line-height:1.7;
@@ -113,7 +114,7 @@
   .more__card{flex:0 0 auto;width:140px;text-align:left}
   .more__img{aspect-ratio:3/4;border:1.5px solid var(--hard);background:#e4e4e1;overflow:hidden;
     display:grid;place-items:center;color:#b7b7b3;font-family:monospace;font-size:10px}
-  .more__name{font-family:"Magazine",sans-serif;font-size:12px;margin-top:8px;line-height:1.2}
+  .more__name{font-family:"OPTITimes",serif;font-size:13px;margin-top:8px;line-height:1.2}
   .more__price{font-family:"Octin",monospace;font-size:11px;color:var(--muted);margin-top:3px}
 
   footer{border-top:1px solid var(--line);background:#fff}
@@ -203,7 +204,7 @@ function render(reqId){
     <button class="prod__cart" id="addCart" ${it.sold?'disabled':''}>${it.sold?'SOLD OUT':'ADD TO CART'}</button>
     <div class="prod__tools">
       ${hasChart?`<button class="tool" id="sizeGuideBtn">${MANN}</button>`:''}
-      <button class="tool">${TRUCK}</button>
+      <a class="tool" href="shipping.html" aria-label="shipping">${TRUCK}</a>
     </div>
     ${hasChart?`<div class="prod__chart" id="prodChart">
       <div class="cbar"><h3>SIZE CHART</h3><span class="u">UNIT: cm</span></div>
