@@ -427,6 +427,7 @@
       <a href="#shop" class="m-cat" data-cat="Other">OTHER</a>
       <a href="#shop" class="m-cat" data-cat="Object">OBJECT</a>
       <a href="#shop" class="m-cat" data-cat="1OF1 + SAMPLE">1OF1 + SAMPLE</a>
+      <a href="#shop" class="m-cat" data-cat="Collaboration">COLLABORATION</a>
     </div>
     <a href="#shop" class="m-close"><span class="inner"><span class="mk">–</span><span class="lbl">SS26</span></span></a>
     <a href="#shop" class="m-close"><span class="inner"><span class="mk">–</span><span class="lbl">FW25</span></span></a>
@@ -489,7 +490,7 @@
 <footer>
   <div class="foot">
     <div class="sign"><svg class="lalogo" viewBox="0 0 735.38 84.81" style="color:var(--ink)"><use href="#laLogo"></use></svg>© 2026 ALL RIGHTS RESERVED.</div>
-    <nav><b data-i="ftShop">SHOP</b><a href="#shop" data-i="new">NEW ARRIVAL</a><a href="#shop" data-i="sale">ARCHIVE SALE</a><a href="#shop" data-i="acc">ACCESSORY</a></nav>
+    <nav><b data-i="ftShop">SHOP</b><a href="#shop">SS26</a><a href="#shop">FW25</a><a href="#shop">ARCHIVE</a></nav>
     <nav><b data-i="infoTitle">INFO</b><a href="about.html" data-i="about">ABOUT</a><a href="contact.html" data-i="contact">CONTACT</a><a href="https://www.instagram.com/loin_armis/" target="_blank" rel="noopener">INSTAGRAM</a></nav>
     <nav><b data-i="ftLegal">LEGAL</b><a href="tokushoho.html" data-i="legal1">特定商取引法</a><a href="terms.html" data-i="legal2">利用規約</a><a href="privacy.html" data-i="legal3">プライバシー</a></nav>
   </div>
@@ -582,7 +583,7 @@ function updateCount(n){
   const d=I[curLang]||I.en, sp=(curLang==='ja'||curLang==='zh'||curLang==='ko')?'':' ';
   const el=document.getElementById('cnt'); if(el) el.textContent=String(n).padStart(2,'0')+sp+d.items;
 }
-const CATEGORIES=['Tops','Pants','Jacket','Accessory','Other','Object','1OF1 + SAMPLE'];
+const CATEGORIES=['Tops','Pants','Jacket','Accessory','Other','Object','1OF1 + SAMPLE','Collaboration'];
 function populateCatFilter(){
   const sel=document.getElementById('catFilter'); if(!sel) return;
   const cur=sel.value;

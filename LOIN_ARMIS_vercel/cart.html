@@ -48,7 +48,8 @@
   .cart__price{font-family:"Octin",monospace;font-size:13px;white-space:nowrap}
   .cart__rm{background:none;border:none;font-family:"Octin",monospace;font-size:14px;color:var(--muted);padding:6px 4px;margin-left:4px}
   .cart__rm:hover{color:var(--accent)}
-  .cart__total{display:flex;justify-content:space-between;width:100%;max-width:620px;margin:22px 0 26px;font-family:"Octin",monospace;font-size:15px;letter-spacing:.12em;border-top:1.5px solid var(--hard);padding-top:18px}
+  .cart__sub{display:flex;justify-content:space-between;width:100%;max-width:620px;font-family:"Octin",monospace;font-size:12px;letter-spacing:.08em;color:var(--muted);padding:5px 0}
+  .cart__total{display:flex;justify-content:space-between;width:100%;max-width:620px;margin:8px 0 26px;font-family:"Octin",monospace;font-size:15px;letter-spacing:.12em;border-top:1.5px solid var(--hard);padding-top:14px}
   .cart__co{font-family:"Octin",monospace;letter-spacing:.22em;font-size:13px;border:1px solid var(--hard);padding:16px 0;background:var(--ink);color:#fff;width:100%;max-width:620px;margin-bottom:12px}
   .cart__co:hover{background:#fff;color:var(--ink)}
   footer{border-top:1px solid var(--line);background:#fff}
@@ -69,6 +70,7 @@
 <script src="store.js"></script>
 <script>
 let PROD=[];
+var SHIP={shipping_fee:0,free_over:0};
 const findP=id=>PROD.find(x=>String(x.id)===String(id));
 const num=s=>parseInt(String(s).replace(/[^0-9]/g,''),10)||0;
 function getCart(){try{return JSON.parse(localStorage.getItem('la_cart_items')||'[]')||[]}catch(e){return[]}}
@@ -93,9 +95,14 @@ function draw(){
       +'<div class="cart__info"><div class="cart__name">'+p.n+'</div><div class="cart__meta">SIZE: '+(c.size||'-')+'</div></div>'
       +'<div class="cart__price">'+p.p+'</div><button class="cart__rm" data-i="'+idx+'" aria-label="remove">✕</button></div>';});
   const total=arr.reduce((s,c)=>s+num((findP(c.id)||{}).p),0);
+  const _fee=parseInt(SHIP.shipping_fee,10)||0,_fo=parseInt(SHIP.free_over,10)||0;
+  const _ship=(_fee>0 && !(_fo>0 && total>=_fo))?_fee:0;
+  const _grand=total+_ship, _sl=_ship>0?('¥'+_ship.toLocaleString()):'FREE';
   m.innerHTML='<div class="cart__h">YOUR CART ('+arr.length+')</div>'
     +'<div class="cart__list">'+rows+'</div>'
-    +'<div class="cart__total"><span>TOTAL</span><span>¥'+total.toLocaleString()+'</span></div>'
+    +'<div class="cart__sub"><span>SUBTOTAL</span><span>¥'+total.toLocaleString()+'</span></div>'
+    +'<div class="cart__sub"><span>SHIPPING</span><span>'+_sl+'</span></div>'
+    +'<div class="cart__total"><span>TOTAL</span><span>¥'+_grand.toLocaleString()+'</span></div>'
     +'<button class="cart__co">CHECKOUT</button>'
     +'<a class="btn" href="index.html">CONTINUE SHOPPING</a>';
   m.querySelectorAll('.cart__rm').forEach(b=>b.onclick=()=>{const a=getCart();a.splice(+b.dataset.i,1);saveCart(a);draw();});
@@ -103,7 +110,7 @@ function draw(){
 }
 draw(); // まず即描画（空表示でも止まらないように）
 if(window.Store && Store.load){
-  Store.load().then(function(d){PROD=d;draw();}).catch(function(e){console.error('[cart]',e);draw();});
+  Store.load().then(function(d){PROD=d; return Store.settings?Store.settings():null;}).then(function(s){ if(s)SHIP=s; draw(); }).catch(function(e){console.error('[cart]',e);draw();});
 }else{
   console.error('[cart] Store 未読込（store.js / supabase-js を確認）');
 }
