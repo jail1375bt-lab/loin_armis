@@ -429,9 +429,9 @@
       <a href="#shop" class="m-cat" data-cat="1OF1 + SAMPLE">1OF1 + SAMPLE</a>
       <a href="#shop" class="m-cat" data-cat="Collaboration">COLLABORATION</a>
     </div>
-    <a href="#shop" class="m-close"><span class="inner"><span class="mk">–</span><span class="lbl">SS26</span></span></a>
-    <a href="#shop" class="m-close"><span class="inner"><span class="mk">–</span><span class="lbl">FW25</span></span></a>
-    <a href="#shop" class="m-close"><span class="inner"><span class="mk">–</span><span class="lbl">ARCHIVE</span></span></a>
+    <a href="#shop" class="m-close f-season" data-season="SS26"><span class="inner"><span class="mk">–</span><span class="lbl">SS26</span></span></a>
+    <a href="#shop" class="m-close f-season" data-season="FW25"><span class="inner"><span class="mk">–</span><span class="lbl">FW25</span></span></a>
+    <a href="#shop" class="m-close f-season" data-season="ARCHIVE"><span class="inner"><span class="mk">–</span><span class="lbl">ARCHIVE</span></span></a>
     <a href="stockist.html"><span class="inner"><span class="mk">–</span><span class="lbl">STOCKIST</span></span></a>
     <a href="about.html"><span class="inner"><span class="mk">–</span><span class="lbl">ABOUT</span></span></a>
     <a href="contact.html"><span class="inner"><span class="mk">–</span><span class="lbl">CONTACT</span></span></a>
@@ -490,7 +490,7 @@
 <footer>
   <div class="foot">
     <div class="sign"><svg class="lalogo" viewBox="0 0 735.38 84.81" style="color:var(--ink)"><use href="#laLogo"></use></svg>© 2026 ALL RIGHTS RESERVED.</div>
-    <nav><b data-i="ftShop">SHOP</b><a href="#shop">SS26</a><a href="#shop">FW25</a><a href="#shop">ARCHIVE</a></nav>
+    <nav><b data-i="ftShop">SHOP</b><a href="#shop" class="f-season" data-season="SS26">SS26</a><a href="#shop" class="f-season" data-season="FW25">FW25</a><a href="#shop" class="f-season" data-season="ARCHIVE">ARCHIVE</a></nav>
     <nav><b data-i="infoTitle">INFO</b><a href="about.html" data-i="about">ABOUT</a><a href="contact.html" data-i="contact">CONTACT</a><a href="https://www.instagram.com/loin_armis/" target="_blank" rel="noopener">INSTAGRAM</a></nav>
     <nav><b data-i="ftLegal">LEGAL</b><a href="tokushoho.html" data-i="legal1">特定商取引法</a><a href="terms.html" data-i="legal2">利用規約</a><a href="privacy.html" data-i="legal3">プライバシー</a></nav>
   </div>
@@ -560,7 +560,7 @@ const I={
 };
 
 /* ===== 商品データ（Supabaseから読み込み） ===== */
-let items=[], view=[], curLang='ja', searchTerm='';
+let items=[], view=[], curLang='ja', searchTerm='', seasonFilter='';
 
 /* カテゴリ別サイズチャート (商品ごとに表示) */
 const CHART={
@@ -574,6 +574,7 @@ function getView(){
   const cat=(document.getElementById('catFilter')||{}).value||'';
   const sort=(document.getElementById('sortBy')||{}).value||'default';
   let v=items.filter(it=>!cat||(it.cat||'').toLowerCase()===cat.toLowerCase());
+  if(seasonFilter){ v=v.filter(it=>(it.season||'').toLowerCase()===seasonFilter.toLowerCase()); }
   if(searchTerm){ v=v.filter(it=>(it.n||'').toLowerCase().includes(searchTerm)); }
   if(sort==='price-asc') v=v.slice().sort((a,b)=>(a.now||0)-(b.now||0));
   else if(sort==='price-desc') v=v.slice().sort((a,b)=>(b.now||0)-(a.now||0));
@@ -611,7 +612,8 @@ function fillGrid(){
   const rem=view.length % cols;
   if(rem!==0){ for(let i=0;i<cols-rem;i++){ const f=document.createElement('span'); f.className='card card--filler'; grid.appendChild(f); } }
 }
-['catFilter','sortBy'].forEach(function(id){var e=document.getElementById(id); if(e) e.addEventListener('change',renderGrid);});
+(function(){var cf=document.getElementById('catFilter'); if(cf) cf.addEventListener('change',function(){ seasonFilter=''; renderGrid(); }); var sb2=document.getElementById('sortBy'); if(sb2) sb2.addEventListener('change',renderGrid);})();
+document.querySelectorAll('.f-season').forEach(function(a){ a.addEventListener('click',function(){ seasonFilter=this.dataset.season||''; var cf=document.getElementById('catFilter'); if(cf) cf.value=''; searchTerm=''; var si=document.getElementById('searchInput'); if(si) si.value=''; if(typeof renderGrid==='function') renderGrid(); var shop=document.getElementById('shop'); if(shop) setTimeout(function(){shop.scrollIntoView({behavior:'smooth'});},120); }); });
 let _rsT; addEventListener('resize',function(){clearTimeout(_rsT); _rsT=setTimeout(function(){ if(items.length) renderGrid(); },200);});
 /* グリッドは Supabase 読み込み後に描画 */
 Store.load().then(function(data){
@@ -747,6 +749,7 @@ scrim.onclick=closeMenu;
 document.querySelectorAll('#menu .mnav a, #menu .menu-socials a').forEach(a=>a.addEventListener('click',closeMenu));
 document.querySelectorAll('#menu .m-cat').forEach(a=>a.addEventListener('click',function(){
   const sel=document.getElementById('catFilter');
+  seasonFilter='';
   if(sel){ sel.value=this.dataset.cat; if(typeof renderGrid==='function') renderGrid(); }
   closeMenu();
   const shop=document.getElementById('shop'); if(shop) setTimeout(()=>shop.scrollIntoView({behavior:'smooth'}),180);
