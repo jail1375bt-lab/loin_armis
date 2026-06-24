@@ -119,26 +119,49 @@
   .lang::after{content:"▾";position:absolute;right:7px;top:50%;transform:translateY(-50%);
     pointer-events:none;font-size:9px}
 
-  /* ===== ドロワーメニュー ===== */
-  .drawer{position:fixed;inset:0 auto 0 0;width:min(320px,82vw);background:#fff;
-    border-right:1px solid var(--line);transform:translateX(-101%);transition:transform .3s ease;
-    z-index:80;padding:22px 22px;display:flex;flex-direction:column;gap:6px;overflow-y:auto}
-  .drawer.open{transform:none}
-  .drawer .x{align-self:flex-end;font-size:13px;letter-spacing:.2em;padding:4px 2px 16px}
-  .drawer a{padding:12px 0;border-bottom:1px solid var(--line);font-size:13px;letter-spacing:.18em}
-  .drawer a:hover{color:var(--accent)}
-  .drawer .grp{font-size:10px;letter-spacing:.28em;color:var(--muted);margin:18px 0 2px}
-  .drawer button.acc{display:flex;justify-content:space-between;align-items:center;width:100%;
-    background:none;border:none;border-bottom:1px solid var(--line);padding:12px 0;
-    font:inherit;font-size:13px;letter-spacing:.18em;color:inherit;text-align:left}
-  .drawer button.acc:hover{color:var(--accent)}
-  .drawer button.acc .pm{font-size:16px;color:var(--muted);line-height:1}
-  .drawer .subcat{display:none;flex-direction:column}
-  .drawer .subcat.open{display:flex}
-  .drawer .subcat a{padding-left:18px;font-size:12px;color:var(--muted);letter-spacing:.16em}
-  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;visibility:hidden;
-    transition:.3s;z-index:70}
-  .scrim.open{opacity:1;visibility:visible}
+  /* ===== フルスクリーンメニュー (20XX風 / clip-path展開) ===== */
+  #menu{position:fixed;inset:0 auto 0 0;width:min(460px,90vw);z-index:120;background:#fff;color:var(--ink);border-right:1.5px solid var(--hard);
+    transform:translateX(-101%);transition:transform .55s cubic-bezier(.76,0,.24,1);
+    display:flex;flex-direction:column;padding:26px 32px 28px;overflow-y:auto;box-shadow:0 0 50px rgba(0,0,0,.18)}
+  #menu.open{transform:none}
+  .menu-scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;visibility:hidden;transition:.4s;z-index:110}
+  .menu-scrim.open{opacity:1;visibility:visible}
+  .menu-grid{display:none}
+  .menu-corner{display:none}
+  .menu-corner.tl{top:0;left:0;border-top:1px solid rgba(226,35,26,.45);border-left:1px solid rgba(226,35,26,.45)}
+  .menu-corner.br{bottom:0;right:0;border-bottom:1px solid rgba(226,35,26,.45);border-right:1px solid rgba(226,35,26,.45)}
+  .menu-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:2}
+  .menu-top .lalogo{height:16px;width:auto}
+  #menu .close-btn{width:42px;height:42px;display:flex;align-items:center;justify-content:center;
+    border:1px solid rgba(0,0,0,.2);background:none;color:var(--muted);font:inherit;font-size:20px;transition:all .25s}
+  #menu .close-btn:hover{border-color:var(--accent);color:var(--accent)}
+  #menu .mnav{flex:1;display:flex;flex-direction:column;justify-content:center;gap:2px;position:relative;z-index:2}
+  #menu .mnav a{font-family:"Magazine",sans-serif;color:var(--ink);font-size:clamp(26px,5.5vw,44px);
+    letter-spacing:.04em;line-height:1.12;display:block;overflow:hidden;transition:color .3s,letter-spacing .4s cubic-bezier(.16,1,.3,1)}
+  #menu .mnav a:hover{color:var(--accent);letter-spacing:.1em}
+  #menu .mnav a .inner{display:block;transform:translateY(110%);transition:transform .7s cubic-bezier(.16,1,.3,1)}
+  #menu.open .mnav a .inner{transform:translateY(0)}
+  #menu .mnav a:nth-child(1) .inner{transition-delay:.24s}
+  #menu .mnav a:nth-child(2) .inner{transition-delay:.30s}
+  #menu .mnav a:nth-child(3) .inner{transition-delay:.36s}
+  #menu .mnav a:nth-child(4) .inner{transition-delay:.42s}
+  #menu .mnav a:nth-child(5) .inner{transition-delay:.48s}
+  #menu .mnav a:nth-child(6) .inner{transition-delay:.54s}
+  .menu-cats{display:flex;flex-wrap:wrap;gap:8px 20px;margin:22px 0 0;position:relative;z-index:2}
+  .menu-cats a{font-family:"Octin",monospace;font-size:11px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;transition:color .2s}
+  .menu-cats a:hover{color:var(--accent)}
+  .menu-lang{display:flex;align-items:center;gap:12px;margin-top:20px;position:relative;z-index:2}
+  .menu-lang span{font-family:"Octin",monospace;font-size:10px;letter-spacing:.2em;color:var(--muted)}
+  .menu-lang select{appearance:none;-webkit-appearance:none;background:transparent;border:1px solid var(--hard);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.12em;padding:6px 24px 6px 10px;cursor:pointer}
+  .menu-lang select option{color:#000}
+  .menu-bottom{display:flex;justify-content:space-between;align-items:flex-end;position:relative;z-index:2;gap:20px;flex-wrap:wrap;margin-top:24px}
+  .menu-socials{display:flex;gap:22px}
+  .menu-socials a{font-family:"Octin",monospace;font-size:10px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;transition:color .2s}
+  .menu-socials a:hover{color:var(--ink)}
+  .menu-foot{text-align:right}
+  .menu-foot .big{font-family:"Magazine",sans-serif;font-size:22px;letter-spacing:.12em;color:rgba(0,0,0,.2);display:block}
+  .menu-foot small{font-size:9px;letter-spacing:.2em;color:rgba(0,0,0,.16);display:block;margin-top:2px}
+  @media(max-width:640px){#menu{padding:20px 22px 24px}.menu-cats{gap:6px 14px}.menu-foot .big{font-size:16px}}
 
   /* ===== ヒーロー (フルブリード) ===== */
   .hero{position:relative;width:100%;height:min(90vh,100vw);background:#fff;overflow:hidden}
@@ -157,10 +180,11 @@
   .shop__head .count{font-family:monospace;font-size:11px;color:var(--muted)}
   .shop__ctrl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .shopsel{font-family:"Octin",monospace;font-size:11px;letter-spacing:.12em;color:var(--ink);background-color:#fff;border:1px solid var(--hard);border-radius:0;padding:7px 24px 7px 10px;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M2 3l3 3 3-3' fill='none' stroke='black' stroke-width='1.3'/></svg>");background-repeat:no-repeat;background-position:right 8px center}
-  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5px;background:var(--hard);
-    border-top:1.5px solid var(--hard);border-bottom:1.5px solid var(--hard)}
-  .card{background:#fff;display:flex;flex-direction:column}
-  .card__img{position:relative;aspect-ratio:3/4;background:#e4e4e1;overflow:hidden;border:1.5px solid var(--hard)}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:#fff;
+    border-top:1.5px solid var(--hard);border-right:1.5px solid var(--hard);border-bottom:1.5px solid var(--hard)}
+  .card{background:#fff;display:flex;flex-direction:column;border-left:1.5px solid var(--hard);border-bottom:1.5px solid var(--hard)}
+  .card--filler{background:#fff;pointer-events:none}
+  .card__img{position:relative;aspect-ratio:3/4;background:#e4e4e1;overflow:hidden;border-bottom:1.5px solid var(--hard)}
   .card__img .soldout{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:86%;height:auto;z-index:3;pointer-events:none}
   .card__img .swatch{position:absolute;inset:0;display:grid;place-items:center;
     color:#b7b7b3;font-family:monospace;font-size:11px;letter-spacing:.2em}
@@ -346,43 +370,57 @@
     </div>
     <a class="brand" href="#"><svg class="lalogo" viewBox="0 0 735.38 84.81"><use href="#laLogo"></use></svg></a>
     <div class="right">
-      <span class="lang"><select id="lang" aria-label="language">
-        <option value="en">EN</option>
-        <option value="ja">日本語</option>
-        <option value="zh">中文</option>
-        <option value="ko">한국어</option>
-        <option value="fr">FR</option>
-        <option value="de">DE</option>
-      </select></span>
       <a aria-label="account"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg></a>
       <a aria-label="cart" class="cartwrap" href="cart.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg><span class="badge" id="cartBadge">0</span></a>
     </div>
   </div>
 </header>
 
-<!-- ドロワー -->
-<div class="scrim" id="scrim"></div>
-<aside class="drawer" id="drawer">
-  <a class="x" id="closeBtn" data-i="close">CLOSE ✕</a>
-  <a href="#">HOME</a>
-  <a href="#shop">ALL GEAR</a>
-  <button class="acc" id="catToggle">CATEGORY<span class="pm">+</span></button>
-  <div class="subcat" id="subcat">
-    <a href="#shop">TOPS</a>
-    <a href="#shop">PANTS</a>
-    <a href="#shop">JACKET</a>
-    <a href="#shop">ACCESSORY</a>
-    <a href="#shop">OTHER</a>
+<!-- メニュー -->
+<div class="menu-scrim" id="scrim"></div>
+<div id="menu">
+  <div class="menu-grid"></div>
+  <div class="menu-corner tl"></div>
+  <div class="menu-corner br"></div>
+  <div class="menu-top">
+    <a class="brand" href="index.html"><svg class="lalogo" viewBox="0 0 735.38 84.81"><use href="#laLogo"></use></svg></a>
+    <button class="close-btn" id="closeBtn" aria-label="close">×</button>
   </div>
-  <a href="#">MEN</a>
-  <a href="#">WOMEN</a>
-  <a href="#">SS26</a>
-  <a href="#">FW25</a>
-  <a href="#">COLLABORATION</a>
-  <a href="about.html">ABOUT</a>
-  <a href="contact.html">CONTACT</a>
-  <a href="https://www.instagram.com/loin_armis/" target="_blank" rel="noopener">INSTAGRAM</a>
-</aside>
+  <nav class="mnav">
+    <a href="index.html"><span class="inner">HOME</span></a>
+    <a href="#shop" class="m-close"><span class="inner">ALL GEAR</span></a>
+    <a href="#shop" class="m-close"><span class="inner">SS26</span></a>
+    <a href="#shop" class="m-close"><span class="inner">FW25</span></a>
+    <a href="about.html"><span class="inner">ABOUT</span></a>
+    <a href="contact.html"><span class="inner">CONTACT</span></a>
+  </nav>
+  <div class="menu-cats">
+    <a href="#shop" class="m-cat" data-cat="Tops">TOPS</a>
+    <a href="#shop" class="m-cat" data-cat="Pants">PANTS</a>
+    <a href="#shop" class="m-cat" data-cat="Jacket">JACKET</a>
+    <a href="#shop" class="m-cat" data-cat="Accessory">ACCESSORY</a>
+    <a href="#shop" class="m-cat" data-cat="Other">OTHER</a>
+    <a href="#shop" class="m-cat" data-cat="Object">OBJECT</a>
+  </div>
+  <div class="menu-lang">
+    <span>LANGUAGE</span>
+    <select id="langMenu" aria-label="language">
+      <option value="en">EN</option>
+      <option value="ja">日本語</option>
+      <option value="zh">中文</option>
+      <option value="ko">한국어</option>
+      <option value="fr">FR</option>
+      <option value="de">DE</option>
+    </select>
+  </div>
+  <div class="menu-bottom">
+    <div class="menu-socials">
+      <a href="https://www.instagram.com/loin_armis/" target="_blank" rel="noopener">INSTAGRAM</a>
+      <a href="contact.html">CONTACT</a>
+    </div>
+    <div class="menu-foot"><span class="big">LOIN ARMIS™</span><small>© 2026 ALL RIGHTS RESERVED.</small></div>
+  </div>
+</div>
 
 <!-- ヒーロー -->
 <section class="hero">
@@ -527,9 +565,18 @@ function renderGrid(){
       <div class="card__body"><div class="card__name">${it.n}</div>
         <div class="card__price">${price}</div></div></a>`;
   }).join('');
+  fillGrid();
   updateCount(view.length);
 }
+function fillGrid(){
+  const grid=document.getElementById('grid'); if(!grid) return;
+  let cols=4;
+  try{cols=getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length;}catch(e){}
+  const rem=view.length % cols;
+  if(rem!==0){ for(let i=0;i<cols-rem;i++){ const f=document.createElement('span'); f.className='card card--filler'; grid.appendChild(f); } }
+}
 ['catFilter','sortBy'].forEach(function(id){var e=document.getElementById(id); if(e) e.addEventListener('change',renderGrid);});
+let _rsT; addEventListener('resize',function(){clearTimeout(_rsT); _rsT=setTimeout(function(){ if(items.length) renderGrid(); },200);});
 /* グリッドは Supabase 読み込み後に描画 */
 Store.load().then(function(data){
   items=data; populateCatFilter(); renderGrid();
@@ -649,18 +696,26 @@ function applyLang(L){
 const sel=document.getElementById('lang');
 let init='ja';
 try{const s=localStorage.getItem('la_lang');if(s&&I[s])init=s}catch(e){}
-sel.value=init; applyLang(init);
-sel.addEventListener('change',()=>applyLang(sel.value));
+const langMenu=document.getElementById('langMenu');
+if(sel) sel.value=init; if(langMenu) langMenu.value=init; applyLang(init);
+if(sel) sel.addEventListener('change',()=>{applyLang(sel.value); if(langMenu) langMenu.value=sel.value;});
+if(langMenu) langMenu.addEventListener('change',()=>{applyLang(langMenu.value); if(sel) sel.value=langMenu.value;});
 
-/* ===== ドロワー ===== */
-const drawer=document.getElementById('drawer'),scrim=document.getElementById('scrim');
-const openD=()=>{drawer.classList.add('open');scrim.classList.add('open')};
-const closeD=()=>{drawer.classList.remove('open');scrim.classList.remove('open')};
-document.getElementById('menuBtn').onclick=openD;
-document.getElementById('closeBtn').onclick=closeD;
-scrim.onclick=closeD;
-const catToggle=document.getElementById('catToggle'),subcat=document.getElementById('subcat');
-catToggle.onclick=()=>{const o=subcat.classList.toggle('open');catToggle.querySelector('.pm').textContent=o?'−':'+';};
+/* ===== メニュー (20XX風パネル) ===== */
+const menu=document.getElementById('menu'),scrim=document.getElementById('scrim');
+const openMenu=()=>{menu.classList.add('open');scrim.classList.add('open');document.body.style.overflow='hidden';};
+const closeMenu=()=>{menu.classList.remove('open');scrim.classList.remove('open');document.body.style.overflow='';};
+document.getElementById('menuBtn').onclick=openMenu;
+document.getElementById('closeBtn').onclick=closeMenu;
+scrim.onclick=closeMenu;
+document.querySelectorAll('#menu .mnav a, #menu .menu-socials a').forEach(a=>a.addEventListener('click',closeMenu));
+document.querySelectorAll('#menu .m-cat').forEach(a=>a.addEventListener('click',function(){
+  const sel=document.getElementById('catFilter');
+  if(sel){ sel.value=this.dataset.cat; if(typeof renderGrid==='function') renderGrid(); }
+  closeMenu();
+  const shop=document.getElementById('shop'); if(shop) setTimeout(()=>shop.scrollIntoView({behavior:'smooth'}),180);
+}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menu.classList.contains('open'))closeMenu();});
 
 /* ===== ニュースレター登録 ===== */
 const news=document.getElementById('news');
