@@ -45,12 +45,14 @@
 <script src="pay-config.js"></script>
 <script>
 var PROD=[];
+var sbc=supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
+var sessionUser=null;
 function findP(id){return PROD.find(function(x){return String(x.id)===String(id);});}
 function getCart(){try{return JSON.parse(localStorage.getItem('la_cart_items')||'[]')||[]}catch(e){return[]}}
 var main=document.getElementById('main');
 var params=new URLSearchParams(location.search);
 if(params.get('payment_intent_client_secret') || params.get('done')){ showDone(); }
-else { Store.load().then(function(d){ PROD=d; startCheckout(); }).catch(function(e){ console.error(e); main.innerHTML='<div class="msg">商品情報を読み込めませんでした。<br>時間をおいて再度お試しください。</div>'; }); }
+else { Store.load().then(function(d){ PROD=d; return sbc.auth.getSession(); }).then(function(r){ sessionUser=(r&&r.data&&r.data.session&&r.data.session.user)||null; startCheckout(); }).catch(function(e){ console.error(e); main.innerHTML='<div class="msg">商品情報を読み込めませんでした。<br>時間をおいて再度お試しください。</div>'; }); }
 function showDone(){ localStorage.removeItem('la_cart_items'); main.innerHTML='<div class="done"><h2>THANK YOU</h2><p>ご注文ありがとうございます。確認メールをお送りします。</p><a class="btn" href="index.html">CONTINUE SHOPPING</a></div>'; }
 function startCheckout(){
   var cart=getCart();
@@ -60,8 +62,9 @@ function startCheckout(){
   cart.forEach(function(c){var pr=findP(c.id); if(!pr||pr.sold)return; var price=pr.now||0; total+=price;
     rows+='<div class="row"><span>'+pr.n+(c.size?(' / '+c.size):'')+'</span><span>¥'+price.toLocaleString()+'</span></div>';});
   main.innerHTML='<h1>CHECKOUT</h1>'+rows+'<div class="total"><span>TOTAL</span><span>¥'+total.toLocaleString()+'</span></div><form id="pf"><label class="fl">お名前</label><input class="fi" id="cName" required autocomplete="name"><label class="fl">メールアドレス（領収・コンビニ払い用）</label><input class="fi" id="cEmail" type="email" required autocomplete="email"><div id="payment-element"></div><button class="pay" id="payBtn" type="submit">PAY ¥'+total.toLocaleString()+'</button><div id="err" class="msg" style="color:var(--accent);padding:12px 0"></div></form>';
+  if(sessionUser){ var _em=document.getElementById('cEmail'); if(_em&&!_em.value) _em.value=sessionUser.email||''; }
   var stripe=Stripe(window.STRIPE_PK);
-  fetch('/api/create-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:cart})})
+  fetch('/api/create-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:cart,userId:sessionUser?sessionUser.id:null,email:sessionUser?sessionUser.email:null})})
    .then(function(r){return r.json();})
    .then(function(d){
      if(d.error){document.getElementById('err').textContent=d.error;return;}
@@ -74,11 +77,22 @@ function startCheckout(){
        stripe.confirmPayment({elements:elements,confirmParams:{return_url:location.origin+'/checkout.html?done=1',payment_method_data:{billing_details:{name:nm,email:em}}},redirect:'if_required'})
         .then(function(res){
           if(res.error){document.getElementById('err').textContent=res.error.message;document.getElementById('payBtn').disabled=false;}
-          else if(res.paymentIntent && (res.paymentIntent.status==='succeeded'||res.paymentIntent.status==='processing')){showDone();}
+          else if(res.paymentIntent && (res.paymentIntent.status==='succeeded'||res.paymentIntent.status==='processing')){recordOrder(res.paymentIntent);showDone();}
         });
      });
    })
    .catch(function(){document.getElementById('err').textContent='通信エラー。サーバー関数(/api)が動いているか確認してください。';});
+}
+function recordOrder(pi){
+  if(!sessionUser) return; // ログイン中のみ履歴を保存
+  try{
+    var nm=(document.getElementById('cName')||{}).value||'';
+    var em=(document.getElementById('cEmail')||{}).value||sessionUser.email||'';
+    var cart=getCart();
+    var orderItems=cart.map(function(c){var p=findP(c.id)||{};return {id:c.id,name:p.n||'',size:c.size||'',price:p.now||0};});
+    var total=cart.reduce(function(s,c){var p=findP(c.id);return s+((p&&!p.sold)?(p.now||0):0);},0);
+    sbc.from('orders').insert({user_id:sessionUser.id,email:em,name:nm,items:orderItems,total:total,payment_intent:(pi&&pi.id)||null,status:(pi&&pi.status)||'paid'}).then(function(r){ if(r&&r.error)console.error('order save',r.error); });
+  }catch(e){console.error('order save',e);}
 }
 </script>
 </body>
