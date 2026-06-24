@@ -56,5 +56,20 @@
 
   function byId(list, id){ return list.find(function(x){ return String(x.id) === String(id); }); }
 
-  window.Store = { load: load, byId: byId, fmt: fmt };
+  // 送料設定を取得（settingsテーブル id=1）
+  function getSettings(){
+    return sb.from('settings').select('shipping_fee,free_over').eq('id',1).single()
+      .then(function(r){ return (r && r.data) || {shipping_fee:0, free_over:0}; })
+      .catch(function(){ return {shipping_fee:0, free_over:0}; });
+  }
+  // 小計に対する送料を計算
+  function shipFor(subtotal, st){
+    st = st || {};
+    var fee = parseInt(st.shipping_fee,10) || 0, fo = parseInt(st.free_over,10) || 0;
+    if(fee <= 0) return 0;
+    if(fo > 0 && subtotal >= fo) return 0;
+    return fee;
+  }
+
+  window.Store = { load: load, byId: byId, fmt: fmt, settings: getSettings, shipFor: shipFor };
 })();

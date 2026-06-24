@@ -62,6 +62,14 @@
 </div>
 
 <main id="panel" style="display:none">
+  <div class="card" id="shipBox" style="margin-bottom:18px">
+    <div class="bar" style="margin-bottom:8px"><h2>送料設定</h2></div>
+    <div class="row2">
+      <div><label>送料（円）※0で送料無料</label><input id="s-fee" type="number" min="0" value="0"></div>
+      <div><label>〜円以上で送料無料（0で無効）</label><input id="s-free" type="number" min="0" value="0"></div>
+    </div>
+    <div class="cardfoot"><button class="btn" id="shipSave">送料設定を保存</button><span class="msg" id="shipMsg" style="display:none">保存しました</span></div>
+  </div>
   <div class="bar"><h2>商品管理</h2><button class="btn" id="addBtn">＋ 新規商品を追加</button></div>
   <div id="list"></div>
 </main>
@@ -75,7 +83,7 @@ const sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
 const $ = id => document.getElementById(id);
 const esc = s => (s==null?'':String(s)).replace(/"/g,'&quot;');
 const CHART_TEMPLATE = ["SIZE","LENGTH","SHOULDER","BODY WIDTH","SLEEVE"];
-const CATEGORIES = ["Tops","Pants","Jacket","Accessory","Other","Object","1OF1 + SAMPLE"];
+const CATEGORIES = ["Tops","Pants","Jacket","Accessory","Other","Object","1OF1 + SAMPLE","Collaboration"];
 
 async function init(){
   const { data:{ session } } = await sb.auth.getSession();
@@ -94,6 +102,11 @@ function showPanel(){
   $('panel').style.display='block';
   $('logout').style.display='inline-block';
   load();
+  loadSettings();
+}
+async function loadSettings(){
+  const { data } = await sb.from('settings').select('*').eq('id',1).single();
+  if(data){ $('s-fee').value=data.shipping_fee||0; $('s-free').value=data.free_over||0; }
 }
 
 let PRODUCTS=[];
@@ -102,6 +115,16 @@ async function load(){
   if(error){ alert('読込エラー: '+error.message); return; }
   PRODUCTS=data||[];
   render();
+}
+async function moveProduct(id,dir){
+  if(!id) return;
+  const list=PRODUCTS.slice().sort((a,b)=>(a.sort||0)-(b.sort||0));
+  const idx=list.findIndex(x=>String(x.id)===String(id));
+  const j=idx+dir;
+  if(idx<0||j<0||j>=list.length) return;
+  const t=list[idx]; list[idx]=list[j]; list[j]=t;
+  for(let i=0;i<list.length;i++){ if((list[i].sort||0)!==i+1){ await sb.from('products').update({sort:i+1}).eq('id',list[i].id); } }
+  load();
 }
 
 function normChart(c){
@@ -145,6 +168,8 @@ function card(p){
     <input type="file" class="f-file" accept="image/*" multiple style="margin-top:8px">
     <div class="cardfoot">
       <label class="chk"><input type="checkbox" class="f-sold" ${p.sold?'checked':''}> SOLD OUT</label>
+      <button type="button" class="btn alt moveup" title="上へ">↑</button>
+      <button type="button" class="btn alt movedown" title="下へ">↓</button>
       <button class="btn save">保存</button>
       <button class="btn del">削除</button>
       <span class="msg" style="display:none">保存しました</span>
@@ -282,6 +307,10 @@ function bindCard(el){
     if(error){ alert('削除エラー: '+error.message); return; }
     load();
   };
+
+  const mu=el.querySelector('.moveup'), md=el.querySelector('.movedown');
+  if(mu) mu.onclick=()=>moveProduct(id,-1);
+  if(md) md.onclick=()=>moveProduct(id,1);
 }
 
 $('addBtn').onclick = ()=>{
@@ -291,6 +320,12 @@ $('addBtn').onclick = ()=>{
   node.scrollIntoView({behavior:'smooth'});
 };
 
+$('shipSave').onclick = async ()=>{
+  const rec={ id:1, shipping_fee:parseInt($('s-fee').value,10)||0, free_over:parseInt($('s-free').value,10)||0 };
+  const { error } = await sb.from('settings').upsert(rec);
+  if(error){ alert('送料保存エラー: '+error.message); return; }
+  const m=$('shipMsg'); m.style.display='inline'; setTimeout(()=>m.style.display='none',1500);
+};
 init();
 </script>
 </body>
