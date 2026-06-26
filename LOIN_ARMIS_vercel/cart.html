@@ -49,6 +49,11 @@
   .cart__rm{background:none;border:none;font-family:"Octin",monospace;font-size:14px;color:var(--muted);padding:6px 4px;margin-left:4px}
   .cart__rm:hover{color:var(--accent)}
   .cart__sub{display:flex;justify-content:space-between;width:100%;max-width:620px;font-family:"Octin",monospace;font-size:12px;letter-spacing:.08em;color:var(--muted);padding:5px 0}
+  .cart__coupon{display:flex;gap:8px;width:100%;max-width:620px;margin:16px 0 4px}
+  .cart__coupon input{flex:1;font-family:"Octin",monospace;font-size:13px;letter-spacing:.08em;padding:11px 12px;border:1px solid var(--hard);background:#fff;color:var(--ink);text-transform:uppercase}
+  .cart__coupon button{font-family:"Octin",monospace;letter-spacing:.12em;font-size:12px;padding:0 18px;border:1px solid var(--hard);background:var(--ink);color:#fff;cursor:pointer}
+  .cart__coupon button:hover{background:#fff;color:var(--ink)}
+  .cpn-msg{width:100%;max-width:620px;font-family:"Octin",monospace;font-size:11px;letter-spacing:.06em;color:var(--accent);min-height:14px;margin-bottom:6px}
   .cart__total{display:flex;justify-content:space-between;width:100%;max-width:620px;margin:8px 0 26px;font-family:"Octin",monospace;font-size:15px;letter-spacing:.12em;border-top:1.5px solid var(--hard);padding-top:14px}
   .cart__co{font-family:"Octin",monospace;letter-spacing:.22em;font-size:13px;border:1px solid var(--hard);padding:16px 0;background:var(--ink);color:#fff;width:100%;max-width:620px;margin-bottom:12px}
   .cart__co:hover{background:#fff;color:var(--ink)}
@@ -71,6 +76,10 @@
 <script>
 let PROD=[];
 var SHIP={shipping_fee:0,free_over:0};
+var COUPONS={LAS2026:0.15,WELCOME15:0.15};
+function getCoupon(){try{return (localStorage.getItem('la_coupon')||'').toUpperCase();}catch(e){return '';}}
+function setCoupon(c){try{localStorage.setItem('la_coupon',(c||'').toUpperCase());}catch(e){}}
+function couponRate(c){return COUPONS[(c||'').toUpperCase()]||0;}
 const findP=id=>PROD.find(x=>String(x.id)===String(id));
 const num=s=>parseInt(String(s).replace(/[^0-9]/g,''),10)||0;
 function getCart(){try{return JSON.parse(localStorage.getItem('la_cart_items')||'[]')||[]}catch(e){return[]}}
@@ -95,18 +104,32 @@ function draw(){
       +'<div class="cart__info"><div class="cart__name">'+p.n+'</div><div class="cart__meta">SIZE: '+(c.size||'-')+'</div></div>'
       +'<div class="cart__price">'+p.p+'</div><button class="cart__rm" data-i="'+idx+'" aria-label="remove">✕</button></div>';});
   const total=arr.reduce((s,c)=>s+num((findP(c.id)||{}).p),0);
+  const code=getCoupon(), rate=couponRate(code);
+  const discount=rate>0?Math.round(total*rate):0;
+  const itemsTotal=total-discount;
   const _fee=parseInt(SHIP.shipping_fee,10)||0,_fo=parseInt(SHIP.free_over,10)||0;
-  const _ship=(_fee>0 && !(_fo>0 && total>=_fo))?_fee:0;
-  const _grand=total+_ship, _sl=_ship>0?('¥'+_ship.toLocaleString()):'FREE';
+  const _ship=(_fee>0 && !(_fo>0 && itemsTotal>=_fo))?_fee:0;
+  const _grand=itemsTotal+_ship, _sl=_ship>0?('¥'+_ship.toLocaleString()):'FREE';
+  const discLine=discount>0?('<div class="cart__sub" style="color:var(--accent)"><span>COUPON '+code+'</span><span>−¥'+discount.toLocaleString()+'</span></div>'):'';
   m.innerHTML='<div class="cart__h">YOUR CART ('+arr.length+')</div>'
     +'<div class="cart__list">'+rows+'</div>'
+    +'<div class="cart__coupon"><input id="couponIn" placeholder="クーポンコード / COUPON" value="'+(code||'')+'" autocomplete="off"><button class="cpn-apply" type="button">適用</button></div>'
+    +'<div class="cpn-msg"></div>'
     +'<div class="cart__sub"><span>SUBTOTAL</span><span>¥'+total.toLocaleString()+'</span></div>'
+    +discLine
     +'<div class="cart__sub"><span>SHIPPING</span><span>'+_sl+'</span></div>'
     +'<div class="cart__total"><span>TOTAL</span><span>¥'+_grand.toLocaleString()+'</span></div>'
     +'<button class="cart__co">CHECKOUT</button>'
     +'<a class="btn" href="index.html">CONTINUE SHOPPING</a>';
   m.querySelectorAll('.cart__rm').forEach(b=>b.onclick=()=>{const a=getCart();a.splice(+b.dataset.i,1);saveCart(a);draw();});
   const co=m.querySelector('.cart__co');if(co)co.onclick=checkout;
+  const cpb=m.querySelector('.cpn-apply');
+  if(cpb)cpb.onclick=function(){
+    const v=(((m.querySelector('#couponIn')||{}).value)||'').trim().toUpperCase();
+    if(!v){ setCoupon(''); draw(); return; }
+    if(couponRate(v)>0){ setCoupon(v); draw(); }
+    else { setCoupon(''); const mm=m.querySelector('.cpn-msg'); if(mm){ mm.textContent='無効なクーポンコードです'; } }
+  };
 }
 draw(); // まず即描画（空表示でも止まらないように）
 if(window.Store && Store.load){
