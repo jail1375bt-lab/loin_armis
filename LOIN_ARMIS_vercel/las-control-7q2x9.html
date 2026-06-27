@@ -50,7 +50,7 @@
 </style>
 </head>
 <body>
-<header><b>LOIN ARMIS / ADMIN</b><button id="logout" style="display:none">ログアウト</button></header>
+<header><span style="display:flex;align-items:center;gap:10px"><b>LOIN ARMIS / ADMIN</b><button id="pwGate" title="パスワード変更" aria-label="passcode" style="display:none;padding:4px 9px">🔑</button></span><button id="logout" style="display:none">ログアウト</button></header>
 
 <div id="loginView" class="login">
   <h1>ADMIN LOGIN</h1>
@@ -70,7 +70,7 @@
     </div>
     <div class="cardfoot"><button class="btn" id="shipSave">送料設定を保存</button><span class="msg" id="shipMsg" style="display:none">保存しました</span></div>
   </div>
-  <div class="card" id="pwBox" style="margin-bottom:18px">
+  <div class="card" id="pwBox" style="margin-bottom:18px;display:none">
     <div class="bar" style="margin-bottom:8px"><h2>パスワード変更</h2></div>
     <label>新しいパスワード（6文字以上）</label><input id="newPw" type="password" autocomplete="new-password">
     <div class="cardfoot"><button class="btn" id="pwSave">パスワードを更新</button><span class="msg" id="pwMsg" style="display:none">更新しました</span></div>
@@ -106,6 +106,7 @@ function showPanel(){
   $('loginView').style.display='none';
   $('panel').style.display='block';
   $('logout').style.display='inline-block';
+  $('pwGate').style.display='inline-block';
   load();
   loadSettings();
 }
@@ -334,12 +335,4 @@ $('shipSave').onclick = async ()=>{
 $('pwSave').onclick = async ()=>{
   const v=$('newPw').value;
   if(!v || v.length<6){ alert('6文字以上で入力してください'); return; }
-  const { error } = await sb.auth.updateUser({ password: v });
-  if(error){ alert('変更エラー: '+error.message); return; }
-  $('newPw').value='';
-  const m=$('pwMsg'); m.style.display='inline'; setTimeout(()=>m.style.display='none',2000);
-};
-init();
-</script>
-</body>
-</html>
+  const { error } = await sb.auth.update
