@@ -70,6 +70,11 @@
     </div>
     <div class="cardfoot"><button class="btn" id="shipSave">送料設定を保存</button><span class="msg" id="shipMsg" style="display:none">保存しました</span></div>
   </div>
+  <div class="card" id="pwBox" style="margin-bottom:18px">
+    <div class="bar" style="margin-bottom:8px"><h2>パスワード変更</h2></div>
+    <label>新しいパスワード（6文字以上）</label><input id="newPw" type="password" autocomplete="new-password">
+    <div class="cardfoot"><button class="btn" id="pwSave">パスワードを更新</button><span class="msg" id="pwMsg" style="display:none">更新しました</span></div>
+  </div>
   <div class="bar"><h2>商品管理</h2><button class="btn" id="addBtn">＋ 新規商品を追加</button></div>
   <div id="list"></div>
 </main>
@@ -325,6 +330,14 @@ $('shipSave').onclick = async ()=>{
   const { error } = await sb.from('settings').upsert(rec);
   if(error){ alert('送料保存エラー: '+error.message); return; }
   const m=$('shipMsg'); m.style.display='inline'; setTimeout(()=>m.style.display='none',1500);
+};
+$('pwSave').onclick = async ()=>{
+  const v=$('newPw').value;
+  if(!v || v.length<6){ alert('6文字以上で入力してください'); return; }
+  const { error } = await sb.auth.updateUser({ password: v });
+  if(error){ alert('変更エラー: '+error.message); return; }
+  $('newPw').value='';
+  const m=$('pwMsg'); m.style.display='inline'; setTimeout(()=>m.style.display='none',2000);
 };
 init();
 </script>
