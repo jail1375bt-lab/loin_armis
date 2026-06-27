@@ -1,6 +1,5 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Shipping & Returns — LOIN ARMIS</title><style>
 @font-face{font-family:"Octin";src:url("OctinCollege.otf") format("opentype");font-display:swap}
-@font-face{font-family:"OPTITimes";src:url("OPTITimes-Roman.otf") format("opentype");font-display:swap}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:"Helvetica Neue",Arial,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;background:#fff;color:#0a0a0a;line-height:1.5;min-height:100vh;display:flex;flex-direction:column}
 a{color:inherit}svg{display:block}
@@ -19,22 +18,47 @@ h1{font-family:"Octin",monospace;font-size:clamp(24px,5.5vw,34px);letter-spacing
 footer{border-top:1px solid #e6e6e6;font-family:monospace;font-size:11px;color:#7a7a7a;letter-spacing:.1em;padding:28px 18px;text-align:center}
 </style></head><body>
 <header><div class="bar"><a class="back" href="index.html"><svg style="width:18px;height:18px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 5l-7 7 7 7"/></svg>HOME</a><a class="brand" href="index.html"><img src="LOIN_ARMIS_LOGO.svg" alt="LOIN ARMIS"></a><span class="right">SHIPPING</span></div></header>
-<main class="doc">
-<h1>Shipping &amp; Returns</h1>
-<p class="intro">FOR ALL SHIPPING INQUIRIES, EMAIL <a href="mailto:beyond@loin-armis.com">BEYOND@LOIN-ARMIS.COM</a></p>
-
-<h2>SHIPPING</h2>
-<p>ALL ORDERS ARE SHIPPED FROM JAPAN. WHILE ORDERS ARE TYPICALLY SHIPPED WITHIN 2-3 BUSINESS DAYS, ORDERS MAY TAKE LONGER DUE TO UNFORESEEN CIRCUMSTANCES. YOU WILL RECEIVE AN ORDER CONFIRMATION EMAIL ONCE YOUR ORDER HAS BEEN SUCCESSFULLY PLACED AND ADDITIONAL EMAILS ONCE YOUR ORDER HAS BEEN SHIPPED.</p>
-<p>LOIN ARMIS IS NOT LIABLE FOR ANY MISPLACED OR STOLEN PACKAGES. IF THE ADDRESS PROVIDED TO US UPON CHECKOUT MATCHES THE EXACT ADDRESS WE HAVE SHIPPED YOUR ORDER TO, AND YOUR TRACKING NUMBER READS AS SUCCESSFULLY SHIPPED — WE ARE NOT HELD RESPONSIBLE IF YOUR PACKAGE HAS BEEN MISPLACED. STOLEN / LOST PACKAGES ARE NON-REFUNDABLE. CERTAIN MISUNDERSTANDINGS MAY APPLY BUT EVIDENCE MUST BE RECORDED, PLEASE CONTACT <a href="mailto:beyond@loin-armis.com">BEYOND@LOIN-ARMIS.COM</a> AND WE WILL TRY OUR BEST TO ASSIST YOU WITH THIS MATTER.</p>
-
-<h2>RETURNS</h2>
-<p>ORDERS CAN BE RETURNED FOR FREE WITHIN 7 DAYS OF THE ORDER BEING DELIVERED FOR STORE CREDIT AND EXCHANGES. ALL RETURNED ITEMS MUST BE IN NEW UNWORN CONDITION WITH TAGS STILL ATTACHED. RETURNED ITEMS RECEIVED IN ANY OTHER CONDITION WILL BE SENT BACK AT YOUR EXPENSE UNLESS OTHERWISE AGREED UPON. WE ARE UNABLE TO ACCEPT RETURNS AFTER 7 DAYS FROM TIME OF ORDER WAS DELIVERED. IN PERSON SHOWROOM SHOPPING EXCHANGES / STORE CREDIT IS ONLY AVAILABLE WITHIN 5 BUSINESS DAYS OF THE TRANSACTION. INTERNATIONAL ORDERS DO NOT QUALIFY FOR RETURNS. YOU CAN CONTACT <a href="mailto:beyond@loin-armis.com">BEYOND@LOIN-ARMIS.COM</a> TO INITIATE YOUR RETURN.</p>
-
-<h2>INTERNATIONAL</h2>
-<p>INTERNATIONAL ORDERS USUALLY TAKE 15 DAYS TO ARRIVE ONCE SHIPPED. ALL INTERNATIONAL ORDERS ARE SHIPPED DELIVERED DUTIES UNPAID (DDU). THIS MEANS THAT YOU, THE CUSTOMER, ARE RESPONSIBLE FOR PAYING YOUR LOCAL COUNTRY'S IMPORT DUTIES AT TIME OF DELIVERY. PLACING AN ORDER TO AN INTERNATIONAL DESTINATION SERVES AS CONFIRMATION THAT YOU UNDERSTAND YOUR RESPONSIBILITY TO PAY THESE FEES. UNFORTUNATELY, WE ARE UNABLE TO CALCULATE THESE FEES AT TIME OF PURCHASE.</p>
-
-<h2>MADE TO ORDER</h2>
-<p>IF THE ITEM HAS MADE TO ORDER MARKED IN THE DESCRIPTION, THE ITEM WILL SHIP ONCE STOCK BECOMES AVAILABLE. MADE TO ORDER ITEMS USUALLY TAKE 4 WEEKS. THE ESTIMATED DELIVERY DATE WILL BE LISTED IN THE PRODUCT DESCRIPTION OF THE ITEM. YOU WILL RECEIVE AN EMAIL WITH TRACKING ONCE IT'S BEEN SHIPPED. PRE-ORDER SHIPPING DATES ARE SUBJECT TO DELAYS. MADE TO ORDER PRODUCTS ARE NOT ELIGIBLE FOR CANCELLATION OR REFUNDS.</p>
-</main>
+<main class="doc" id="doc"></main>
 <footer>LOIN ARMIS © 2026 — ALL RIGHTS RESERVED.</footer>
+<script>
+var T={
+ en:{
+  h1:"Shipping & Returns",
+  intro:"FOR ALL SHIPPING INQUIRIES, EMAIL beyond@loin-armis.com",
+  sec:[
+   {h:"SHIPPING",p:[
+     "ALL ORDERS ARE SHIPPED FROM JAPAN. WHILE ORDERS ARE TYPICALLY SHIPPED WITHIN 2-3 BUSINESS DAYS, ORDERS MAY TAKE LONGER DUE TO UNFORESEEN CIRCUMSTANCES. YOU WILL RECEIVE AN ORDER CONFIRMATION EMAIL ONCE YOUR ORDER HAS BEEN SUCCESSFULLY PLACED AND ADDITIONAL EMAILS ONCE YOUR ORDER HAS BEEN SHIPPED.",
+     "LOIN ARMIS IS NOT LIABLE FOR ANY MISPLACED OR STOLEN PACKAGES. IF THE ADDRESS PROVIDED TO US UPON CHECKOUT MATCHES THE EXACT ADDRESS WE HAVE SHIPPED YOUR ORDER TO, AND YOUR TRACKING NUMBER READS AS SUCCESSFULLY SHIPPED — WE ARE NOT HELD RESPONSIBLE IF YOUR PACKAGE HAS BEEN MISPLACED. STOLEN / LOST PACKAGES ARE NON-REFUNDABLE. CERTAIN MISUNDERSTANDINGS MAY APPLY BUT EVIDENCE MUST BE RECORDED, PLEASE CONTACT beyond@loin-armis.com AND WE WILL TRY OUR BEST TO ASSIST YOU WITH THIS MATTER."]},
+   {h:"RETURNS",p:[
+     "ORDERS CAN BE RETURNED FOR FREE WITHIN 7 DAYS OF THE ORDER BEING DELIVERED FOR STORE CREDIT AND EXCHANGES. ALL RETURNED ITEMS MUST BE IN NEW UNWORN CONDITION WITH TAGS STILL ATTACHED. RETURNED ITEMS RECEIVED IN ANY OTHER CONDITION WILL BE SENT BACK AT YOUR EXPENSE UNLESS OTHERWISE AGREED UPON. WE ARE UNABLE TO ACCEPT RETURNS AFTER 7 DAYS FROM TIME OF ORDER WAS DELIVERED. IN PERSON SHOWROOM SHOPPING EXCHANGES / STORE CREDIT IS ONLY AVAILABLE WITHIN 5 BUSINESS DAYS OF THE TRANSACTION. INTERNATIONAL ORDERS DO NOT QUALIFY FOR RETURNS. YOU CAN CONTACT beyond@loin-armis.com TO INITIATE YOUR RETURN."]},
+   {h:"INTERNATIONAL",p:[
+     "INTERNATIONAL ORDERS USUALLY TAKE 15 DAYS TO ARRIVE ONCE SHIPPED. ALL INTERNATIONAL ORDERS ARE SHIPPED DELIVERED DUTIES UNPAID (DDU). THIS MEANS THAT YOU, THE CUSTOMER, ARE RESPONSIBLE FOR PAYING YOUR LOCAL COUNTRY'S IMPORT DUTIES AT TIME OF DELIVERY. PLACING AN ORDER TO AN INTERNATIONAL DESTINATION SERVES AS CONFIRMATION THAT YOU UNDERSTAND YOUR RESPONSIBILITY TO PAY THESE FEES. UNFORTUNATELY, WE ARE UNABLE TO CALCULATE THESE FEES AT TIME OF PURCHASE."]},
+   {h:"MADE TO ORDER",p:[
+     "IF THE ITEM HAS MADE TO ORDER MARKED IN THE DESCRIPTION, THE ITEM WILL SHIP ONCE STOCK BECOMES AVAILABLE. MADE TO ORDER ITEMS USUALLY TAKE 4 WEEKS. THE ESTIMATED DELIVERY DATE WILL BE LISTED IN THE PRODUCT DESCRIPTION OF THE ITEM. YOU WILL RECEIVE AN EMAIL WITH TRACKING ONCE IT'S BEEN SHIPPED. PRE-ORDER SHIPPING DATES ARE SUBJECT TO DELAYS. MADE TO ORDER PRODUCTS ARE NOT ELIGIBLE FOR CANCELLATION OR REFUNDS."]}
+  ]
+ },
+ ja:{
+  h1:"配送・返品",
+  intro:"配送に関するお問い合わせは beyond@loin-armis.com までご連絡ください。",
+  sec:[
+   {h:"配送",p:[
+     "すべての商品は日本から発送されます。通常2〜3営業日以内に発送しますが、予期せぬ事情により遅れる場合があります。ご注文完了時に注文確認メール、発送時に追加のメールをお送りします。",
+     "LOIN ARMIS は、誤配送・盗難による紛失について責任を負いません。ご注文時にご入力いただいた住所と発送先住所が一致し、追跡番号が「発送済み」と表示されている場合、荷物の紛失について当方は責任を負いかねます。盗難・紛失した荷物は返金対象外です。状況により対応できる場合もありますが、証拠の記録が必要です。beyond@loin-armis.com までご連絡いただければ、できる限り対応いたします。"]},
+   {h:"返品",p:[
+     "配送後7日以内であれば、ストアクレジットまたは交換として無料で返品できます。返品商品はタグ付き・未使用の新品状態である必要があります。それ以外の状態で届いた返品は、別途取り決めがない限りお客様負担で返送します。注文配送から7日を過ぎた返品はお受けできません。実店舗（ショールーム）での交換・ストアクレジットは取引から5営業日以内のみ対応します。海外注文は返品対象外です。返品の手続きは beyond@loin-armis.com までご連絡ください。"]},
+   {h:"海外発送",p:[
+     "海外注文は発送後、通常15日ほどで到着します。すべての海外注文は関税元払い無し（DDU）で発送されます。つまりお客様が、配達時にお住まいの国の輸入関税を負担する責任があります。海外宛にご注文いただくことは、これらの費用を負担する責任を理解いただいたものとみなします。購入時にこれらの費用を計算することはできません。"]},
+   {h:"受注生産（MADE TO ORDER）",p:[
+     "商品説明に「MADE TO ORDER（受注生産）」と記載がある場合、在庫が用意でき次第発送されます。受注生産品は通常4週間ほどかかります。お届け予定日は各商品の商品説明に記載されます。発送時に追跡番号付きのメールをお送りします。予約商品の発送日は遅れる場合があります。受注生産品はキャンセル・返金の対象外です。"]}
+  ]
+ }
+};
+var lang="en"; try{var s=localStorage.getItem("la_lang"); if(s&&T[s])lang=s;}catch(e){}
+var d=T[lang]||T.en;
+function mail(s){ return String(s).replace(/beyond@loin-armis\.com/gi,'<a href="mailto:beyond@loin-armis.com">beyond@loin-armis.com</a>'); }
+var html='<h1>'+d.h1+'</h1><p class="intro">'+mail(d.intro)+'</p>';
+d.sec.forEach(function(s){ html+='<h2>'+s.h+'</h2>'; s.p.forEach(function(p){ html+='<p>'+mail(p)+'</p>'; }); });
+document.getElementById('doc').innerHTML=html;
+document.documentElement.lang=lang;
+</script>
 </body></html>

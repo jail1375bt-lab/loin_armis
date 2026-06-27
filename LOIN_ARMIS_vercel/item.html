@@ -143,6 +143,7 @@
 <script src="store.js"></script>
 <script>
 let items=[];
+var LANG='en'; try{var _l=localStorage.getItem('la_lang'); if(_l)LANG=_l;}catch(e){}
 const CHART={
   tops:{head:["SIZE","着丈","身幅","肩幅","袖丈"],rows:[["S",68,52,46,61],["M",71,55,49,63],["L",74,58,52,65],["XL",77,61,55,67]]},
   bottoms:{head:["SIZE","ウエスト","股上","股下","わたり","裾幅"],rows:[["S",72,28,72,30,18],["M",78,29,74,31,19],["L",84,30,76,33,20],["XL",90,31,78,35,21]]},
@@ -177,7 +178,8 @@ function render(reqId){
   const hasChart=!!ch;
   const seasonTag=it.season?`<div class="prod__season">${it.season}</div>`:'';
   const price=it.sale?`<span class="was">${it.was}</span>${it.p}`:it.p;
-  const featList=(it.features&&it.features.length)?it.features:(it.desc?String(it.desc).split(/[\/,、・]/).map(function(s){return s.trim();}).filter(Boolean):null);
+  let featList=(it.features&&it.features.length)?it.features:(it.desc?String(it.desc).split(/[\/,、・]/).map(function(s){return s.trim();}).filter(Boolean):null);
+  if(featList&&featList.length){ var wantJP=(LANG==='ja'); var fl=featList.filter(function(f){var jp=/[぀-ヿ㐀-鿿]/.test(f); return wantJP?jp:!jp;}); if(fl.length) featList=fl; }
   const featHtml=featList?`<ul class="prod__feats">${featList.map(f=>`<li>${f}</li>`).join('')}</ul>`:'';
   const imgs=it.imgs||null;
   const mainHtml=imgs?`<img id="mainImg" src="${imgs[0]}" alt="${it.n}">`:`[ ${it.n} ]`;
