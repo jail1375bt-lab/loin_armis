@@ -177,7 +177,8 @@ function render(reqId){
   const hasChart=!!ch;
   const seasonTag=it.season?`<div class="prod__season">${it.season}</div>`:'';
   const price=it.sale?`<span class="was">${it.was}</span>${it.p}`:it.p;
-  const featHtml=it.features?`<ul class="prod__feats">${it.features.map(f=>`<li>${f}</li>`).join('')}</ul>`:'';
+  const featList=(it.features&&it.features.length)?it.features:(it.desc?String(it.desc).split(/[\/,、・]/).map(function(s){return s.trim();}).filter(Boolean):null);
+  const featHtml=featList?`<ul class="prod__feats">${featList.map(f=>`<li>${f}</li>`).join('')}</ul>`:'';
   const imgs=it.imgs||null;
   const mainHtml=imgs?`<img id="mainImg" src="${imgs[0]}" alt="${it.n}">`:`[ ${it.n} ]`;
   const thumbs=imgs?imgs.map((src,k)=>`<button data-src="${src}" class="${k===0?'on':''}"><img src="${src}" alt=""></button>`).join('')
@@ -198,7 +199,6 @@ function render(reqId){
     ${seasonTag}
     <h1 class="prod__name">${it.n}</h1>
     <div class="prod__price">${price}</div>
-    <div class="prod__desc">${it.desc||''}</div>
     ${featHtml}
     <div class="prod__sizes">${sizeBtns}</div>
     <button class="prod__cart" id="addCart" ${it.sold?'disabled':''}>${it.sold?'SOLD OUT':'ADD TO CART'}</button>

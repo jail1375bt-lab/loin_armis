@@ -163,6 +163,8 @@
   #menu.open .mnav>:nth-child(9) .inner{transition-delay:.57s}
   #menu.open .mnav>:nth-child(10) .inner{transition-delay:.62s}
   #menu.open .mnav>:nth-child(11) .inner{transition-delay:.67s}
+  #menu.open .mnav>:nth-child(12) .inner{transition-delay:.72s}
+  #menu.open .mnav>:nth-child(13) .inner{transition-delay:.77s}
   #menu .mnav .mk{flex:0 0 auto;width:.55em;text-align:left}
   #menu .m-sub{overflow:hidden;max-height:0;transition:max-height .35s ease;padding-left:1.3em}
   #menu .m-sub.open{max-height:440px}
@@ -302,6 +304,13 @@
 
   /* ===== レスポンシブ ===== */
   @media(max-width:900px){ .grid{grid-template-columns:repeat(2,1fr)} }
+  @media(max-width:640px){
+    .shop__head{flex-direction:column;align-items:stretch;gap:12px}
+    .shop__ctrl{justify-content:space-between;width:100%}
+    .foot{gap:22px}
+    .foot .sign{flex:0 0 100%}
+    .foot nav{flex:1;min-width:88px}
+  }
   @media(max-width:520px){
     .bar{padding:14px 12px}
     .brand .lalogo{height:15px;width:130px}
@@ -426,12 +435,12 @@
       <a href="#shop" class="m-cat" data-cat="Accessory">ACCESSORY</a>
       <a href="#shop" class="m-cat" data-cat="Other">OTHER</a>
       <a href="#shop" class="m-cat" data-cat="Object">OBJECT</a>
-      <a href="#shop" class="m-cat" data-cat="1OF1 + SAMPLE">1OF1 + SAMPLE</a>
-      <a href="#shop" class="m-cat" data-cat="Collaboration">COLLABORATION</a>
     </div>
     <a href="#shop" class="m-close f-season" data-season="SS26"><span class="inner"><span class="mk">–</span><span class="lbl">SS26</span></span></a>
     <a href="#shop" class="m-close f-season" data-season="FW25"><span class="inner"><span class="mk">–</span><span class="lbl">FW25</span></span></a>
     <a href="#shop" class="m-close f-season" data-season="ARCHIVE"><span class="inner"><span class="mk">–</span><span class="lbl">ARCHIVE</span></span></a>
+    <a href="#shop" class="m-cat" data-cat="Collaboration"><span class="inner"><span class="mk">–</span><span class="lbl">COLLABORATION</span></span></a>
+    <a href="#shop" class="m-cat" data-cat="1OF1 + SAMPLE"><span class="inner"><span class="mk">–</span><span class="lbl">1OF1 + SAMPLE</span></span></a>
     <a href="stockist.html"><span class="inner"><span class="mk">–</span><span class="lbl">STOCKIST</span></span></a>
     <a href="about.html"><span class="inner"><span class="mk">–</span><span class="lbl">ABOUT</span></span></a>
     <a href="contact.html"><span class="inner"><span class="mk">–</span><span class="lbl">CONTACT</span></span></a>
