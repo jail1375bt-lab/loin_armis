@@ -35,7 +35,6 @@
   .err{color:#e2231a;font-size:12px;margin-top:8px}
   .muted{color:#888;font-size:12px}
   .sale-hint{font-size:11px;color:#e2231a;margin-top:4px;min-height:14px}
-  /* size chart editor */
   .ctbl{width:100%;border-collapse:collapse;margin-top:6px;font-size:12px}
   .ctbl th,.ctbl td{border:1px solid #ddd;padding:0}
   .ctbl input{border:none;border-radius:0;padding:7px 4px;font-size:12px;text-align:center;background:transparent}
@@ -134,7 +133,6 @@ async function moveProduct(id,dir){
 }
 
 function normChart(c){
-  // DB は {head,rows} 形式。編集中は内部的に cols で扱う。
   const head = c && (Array.isArray(c.head) ? c.head : (Array.isArray(c.cols) ? c.cols : null));
   if(head) return {cols:head.slice(), rows:(c.rows||[]).map(r=>r.slice())};
   return {cols:[], rows:[]};
@@ -198,7 +196,6 @@ function bindCard(el){
   let imgs = (prod.imgs||[]).slice();
   let chart = normChart(prod.chart);
 
-  // ---- images ----
   const drawImgs=()=>{ el.querySelector('.imgs').innerHTML = imgs.map((u,i)=>'<div class="th"><img src="'+u+'"><button data-rm="'+i+'">×</button></div>').join(''); bindRm(); };
   function bindRm(){ el.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{ imgs.splice(+b.dataset.rm,1); drawImgs(); }); }
   bindRm();
@@ -214,7 +211,6 @@ function bindCard(el){
     drawImgs();
   };
 
-  // ---- size chart editor ----
   const box = el.querySelector('.chartbox');
   function drawChart(){
     if(!chart.cols.length){ box.innerHTML='<p class="muted">サイズ表なし。「標準テンプレを挿入」か「＋列」で作成できます。</p>'; return; }
@@ -239,7 +235,6 @@ function bindCard(el){
   el.querySelector('.ctmpl').onclick=()=>{ chart.cols=CHART_TEMPLATE.slice(); chart.rows=[chart.cols.map(()=>''), chart.cols.map(()=>'')]; drawChart(); };
   el.querySelector('.cclear').onclick=()=>{ chart.cols=[]; chart.rows=[]; drawChart(); };
 
-  // ---- size stock editor ----
   const stockBox = el.querySelector('.stockbox');
   const sizesEl = el.querySelector('.f-sizes');
   const hadStock = (prod.size_stock && typeof prod.size_stock==='object' && !Array.isArray(prod.size_stock));
@@ -252,7 +247,6 @@ function bindCard(el){
   }
   function drawStock(){
     const sizes = sizesForStock();
-    // サイズ別在庫が未設定の商品は、既存の総在庫を各サイズの初期値にする（保存で勝手に0にしない）
     sizes.forEach(s=>{ if(!(s in stockState)) stockState[s] = hadStock ? 0 : (parseInt(prod.stock,10)||0); });
     stockBox.innerHTML = sizes.map(s=>{
       const v = parseInt(stockState[s],10)||0;
@@ -264,7 +258,6 @@ function bindCard(el){
   el.querySelector('.stockrefresh').onclick=drawStock;
   sizesEl.addEventListener('change', drawStock);
 
-  // ---- sale hint ----
   const priceI=el.querySelector('.f-price'), saleI=el.querySelector('.f-sale'), hint=el.querySelector('.sale-hint');
   function updHint(){
     const pr=parseInt(priceI.value,10)||0, sl=parseInt(saleI.value,10)||0;
@@ -272,13 +265,11 @@ function bindCard(el){
   }
   priceI.oninput=updHint; saleI.oninput=updHint; updHint();
 
-  // ---- save ----
   el.querySelector('.save').onclick = async ()=>{
     const sizesRaw = el.querySelector('.f-sizes').value.trim();
     const sizesArr = sizesRaw ? sizesRaw.split(',').map(s=>s.trim()).filter(Boolean) : null;
     const cleanCols = chart.cols.map(c=>String(c).trim());
     const hasChart = cleanCols.some(c=>c!=='') && chart.rows.length;
-    // サイズ別在庫を確定（現在表示中のサイズのみ）。総在庫=合計。
     const curSizes = sizesForStock();
     const size_stock = {}; let total = 0;
     curSizes.forEach(s=>{ const q = parseInt(stockState[s],10)||0; size_stock[s]=q; total+=q; });
@@ -305,7 +296,6 @@ function bindCard(el){
     load();
   };
 
-  // ---- delete ----
   el.querySelector('.del').onclick = async ()=>{
     if(!id){ el.remove(); return; }
     if(!confirm('この商品を削除しますか？')) return;
@@ -335,4 +325,18 @@ $('shipSave').onclick = async ()=>{
 $('pwSave').onclick = async ()=>{
   const v=$('newPw').value;
   if(!v || v.length<6){ alert('6文字以上で入力してください'); return; }
-  const { error } = await sb.auth.update
+  const { error } = await sb.auth.updateUser({ password: v });
+  if(error){ alert('変更エラー: '+error.message); return; }
+  $('newPw').value='';
+  const m=$('pwMsg'); m.style.display='inline'; setTimeout(()=>m.style.display='none',2000);
+};
+$('pwGate').onclick = ()=>{
+  const code = prompt('4桁のパスコードを入力');
+  if(code===null) return;
+  if(code==='8610'){ $('pwBox').style.display='block'; $('pwBox').scrollIntoView({behavior:'smooth'}); $('newPw').focus(); }
+  else alert('パスコードが違います');
+};
+init();
+</script>
+</body>
+</html>
