@@ -178,8 +178,15 @@ function render(reqId){
   const hasChart=!!ch;
   const seasonTag=it.season?`<div class="prod__season">${it.season}</div>`:'';
   const price=it.sale?`<span class="was">${it.was}</span>${it.p}`:it.p;
-  let featList=(it.features&&it.features.length)?it.features:(it.desc?String(it.desc).split(/[\/,、・]/).map(function(s){return s.trim();}).filter(Boolean):null);
-  if(featList&&featList.length){ var wantJP=(LANG==='ja'); var fl=featList.filter(function(f){var jp=/[぀-ヿ㐀-鿿]/.test(f); return wantJP?jp:!jp;}); if(fl.length) featList=fl; }
+  let featList=(it.desc&&String(it.desc).trim())?String(it.desc).split(/[\n\/／、・,]/).map(function(s){return s.trim();}).filter(Boolean):((it.features&&it.features.length)?it.features:null);
+  if(featList&&featList.length){
+    var isJP=function(f){return /[぀-ヿ㐀-鿿]/.test(f);};
+    var enItems=featList.filter(function(f){return !isJP(f);});
+    var jaItems=featList.filter(function(f){return isJP(f);});
+    var show=(LANG==='ja')?enItems.concat(jaItems):enItems;
+    if(!show.length) show=featList;
+    featList=show;
+  }
   const featHtml=featList?`<ul class="prod__feats">${featList.map(f=>`<li>${f}</li>`).join('')}</ul>`:'';
   const imgs=it.imgs||null;
   const mainHtml=imgs?`<img id="mainImg" src="${imgs[0]}" alt="${it.n}">`:`[ ${it.n} ]`;
