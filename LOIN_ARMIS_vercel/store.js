@@ -11,6 +11,18 @@
   function fmt(n){ return '¥' + (Number(n)||0).toLocaleString(); }
   function arr(v){ return (Array.isArray(v) && v.length) ? v : null; }
 
+  // カテゴリ判定：明示設定が "1OF1 + SAMPLE"/"Collaboration" ならそれを優先。
+  // それ以外は商品名から自動判定（名前に 1OF1 → サンプル枠、× → コラボ枠）。
+  function resolveCat(r){
+    var c = (r.cat || '').trim();
+    var lc = c.toLowerCase();
+    if(lc === '1of1 + sample' || lc === 'collaboration') return c;
+    var n = (r.name || '');
+    if(/1\s*of\s*1|1of1/i.test(n)) return '1OF1 + SAMPLE';
+    if(/[×✕]/.test(n)) return 'Collaboration';
+    return c;
+  }
+
   function norm(r){
     var sale = parseInt(r.sale,10) || 0;
     if(sale < 0) sale = 0; if(sale > 100) sale = 100;
@@ -27,7 +39,7 @@
     return {
       id:        r.id,                 // Supabase の主キー（安定ID）
       n:         r.name || '',
-      cat:       r.cat || '',
+      cat:       resolveCat(r),
       season:    r.season || '',
       price:     r.price || 0,         // 元値（数値）
       sale:      sale,                 // 割引%（0=なし）
