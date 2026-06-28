@@ -17,12 +17,11 @@
     + "#la-cd{position:fixed;inset:0;z-index:2147483647;background:#f4f4f1;color:#0a0a0a;"
     + "display:flex;flex-direction:column;align-items:center;justify-content:center;"
     + "padding:28px;text-align:center;overflow:hidden}"
-    + "#la-cd .cd-mark{font-family:'LA_Octin',monospace;font-size:13px;letter-spacing:.42em;"
-    + "text-transform:uppercase;margin:0 0 30px;padding-left:.42em}"
-    + "#la-cd .cd-soon{font-family:'LA_OPTITimes',serif;font-size:clamp(34px,9vw,76px);"
-    + "line-height:1;letter-spacing:.01em;margin:0 0 6px}"
-    + "#la-cd .cd-date{font-family:'LA_Octin',monospace;font-size:clamp(11px,2.6vw,14px);"
-    + "letter-spacing:.34em;color:#0a0a0a;margin:0 0 40px;padding-left:.34em}"
+    + "#la-cd .cd-logo{width:clamp(190px,44vw,380px);height:auto;display:block;margin:0 0 34px}"
+    + "#la-cd .cd-soon{font-family:'LA_OPTITimes',serif;font-size:clamp(32px,8.4vw,72px);"
+    + "line-height:1;letter-spacing:.01em;margin:0 0 12px}"
+    + "#la-cd .cd-tag{font-family:'LA_Octin',monospace;font-size:clamp(10px,2.4vw,13px);"
+    + "letter-spacing:.3em;color:#8a8a85;margin:0 0 44px;padding-left:.3em}"
     + "#la-cd .cd-timer{display:flex;align-items:flex-start;justify-content:center;gap:clamp(10px,3.2vw,30px)}"
     + "#la-cd .cd-unit{display:flex;flex-direction:column;align-items:center;min-width:clamp(52px,16vw,98px)}"
     + "#la-cd .cd-num{font-family:'LA_OPTITimes',serif;font-size:clamp(40px,12vw,92px);"
@@ -31,9 +30,8 @@
     + "letter-spacing:.24em;color:#777;margin-top:14px;text-transform:uppercase;padding-left:.24em}"
     + "#la-cd .cd-sep{font-family:'LA_OPTITimes',serif;font-size:clamp(34px,10vw,80px);"
     + "line-height:1;color:#c9c9c4;align-self:flex-start;margin-top:-2px}"
-    + "#la-cd .cd-foot{position:absolute;bottom:26px;left:0;right:0;"
-    + "font-family:'LA_Octin',monospace;font-size:10px;letter-spacing:.28em;color:#9a9a95;"
-    + "text-transform:uppercase;padding-left:.28em}";
+    + "#la-cd .cd-open{font-family:'LA_Octin',monospace;font-size:clamp(11px,2.8vw,15px);"
+    + "letter-spacing:.26em;color:#0a0a0a;margin-top:42px;text-transform:uppercase;padding-left:.26em}";
 
   function pad(n) { return (n < 10 ? '0' : '') + n; }
 
@@ -45,9 +43,9 @@
     var ov = document.createElement('div');
     ov.id = 'la-cd';
     ov.innerHTML =
-      '<div class="cd-mark">LOIN ARMIS&trade;</div>' +
-      '<div class="cd-soon">OPENING SOON</div>' +
-      '<div class="cd-date">2026 . 06 . 30 &nbsp; 20:00 JST</div>' +
+      '<img class="cd-logo" src="LOIN_ARMIS_LOGO.svg" alt="LOIN ARMIS">' +
+      '<div class="cd-soon">A NEW BEGINNING</div>' +
+      '<div class="cd-tag">now creates the future</div>' +
       '<div class="cd-timer">' +
         '<div class="cd-unit"><span class="cd-num" id="cd-d">00</span><span class="cd-lbl">Days</span></div>' +
         '<div class="cd-sep">:</div>' +
@@ -57,7 +55,7 @@
         '<div class="cd-sep">:</div>' +
         '<div class="cd-unit"><span class="cd-num" id="cd-s">00</span><span class="cd-lbl">Seconds</span></div>' +
       '</div>' +
-      '<div class="cd-foot">SEE YOU SOON</div>';
+      '<div class="cd-open">SS26 online store open</div>';
     document.body.appendChild(ov);
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
