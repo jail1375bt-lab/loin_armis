@@ -5,11 +5,15 @@
 (function () {
   var START = new Date('2026-06-28T20:00:00+09:00').getTime();
   var OPEN  = new Date('2026-06-30T20:00:00+09:00').getTime();
+  var PREVIEW_PASS = '8610'; // 管理者プレビュー用パスワード（ここを書き換えれば変更可）
 
   function now() { return Date.now(); }
 
   // ロック期間外は何もしない（通常サイト）
   if (now() < START || now() >= OPEN) return;
+
+  // 管理者が一度パスワードで解錠したら、以降は通常サイトを表示（同じ端末・同じブラウザ）
+  try { if (localStorage.getItem('la_preview') === '1') return; } catch (e) {}
 
   var css = ''
     + "@font-face{font-family:'LA_OPTITimes';src:url('OPTITimes-Roman.otf') format('opentype');font-display:swap}"
@@ -31,7 +35,18 @@
     + "#la-cd .cd-sep{font-family:'LA_OPTITimes',serif;font-size:clamp(34px,10vw,80px);"
     + "line-height:1;color:#c9c9c4;align-self:flex-start;margin-top:-2px}"
     + "#la-cd .cd-open{font-family:'LA_Octin',monospace;font-size:clamp(11px,2.8vw,15px);"
-    + "letter-spacing:.26em;color:#0a0a0a;margin-top:42px;text-transform:uppercase;padding-left:.26em}";
+    + "letter-spacing:.26em;color:#0a0a0a;margin-top:42px;text-transform:uppercase;padding-left:.26em}"
+    + "#la-cd .cd-gate{display:flex;gap:8px;margin-top:30px;align-items:center}"
+    + "#la-cd .cd-pass{font-family:'LA_Octin',monospace;font-size:11px;letter-spacing:.18em;"
+    + "text-align:center;width:160px;padding:9px 12px;border:1px solid #c9c9c4;border-radius:0;"
+    + "background:#fff;color:#0a0a0a;outline:none}"
+    + "#la-cd .cd-pass::placeholder{color:#b3b3ad;letter-spacing:.18em}"
+    + "#la-cd .cd-go{font-family:'LA_Octin',monospace;font-size:11px;letter-spacing:.18em;"
+    + "padding:9px 16px;border:1px solid #0a0a0a;background:#0a0a0a;color:#fff;cursor:pointer;text-transform:uppercase}"
+    + "#la-cd .cd-err{font-family:'LA_Octin',monospace;font-size:10px;letter-spacing:.16em;"
+    + "color:#b00020;margin-top:12px;min-height:12px;text-transform:uppercase}"
+    + "#la-cd.shake{animation:lashake .35s}"
+    + "@keyframes lashake{0%,100%{transform:none}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}";
 
   function pad(n) { return (n < 10 ? '0' : '') + n; }
 
@@ -55,10 +70,35 @@
         '<div class="cd-sep">:</div>' +
         '<div class="cd-unit"><span class="cd-num" id="cd-s">00</span><span class="cd-lbl">Seconds</span></div>' +
       '</div>' +
-      '<div class="cd-open">SS26 online store open</div>';
+      '<div class="cd-open">SS26 online store open</div>' +
+      '<form class="cd-gate" id="cd-gate">' +
+        '<input class="cd-pass" id="cd-pass" type="password" inputmode="numeric" placeholder="ADMIN" autocomplete="off">' +
+        '<button class="cd-go" type="submit">ENTER</button>' +
+      '</form>' +
+      '<div class="cd-err" id="cd-err"></div>';
     document.body.appendChild(ov);
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
+
+    // 管理者プレビュー解錠
+    var gate = document.getElementById('cd-gate');
+    if (gate) gate.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var inp = document.getElementById('cd-pass');
+      var val = (inp && inp.value ? inp.value : '').trim();
+      if (val === PREVIEW_PASS) {
+        try { localStorage.setItem('la_preview', '1'); } catch (e2) {}
+        ov.remove();
+        document.documentElement.style.overflow = '';
+        document.body.style.overflow = '';
+      } else {
+        var err = document.getElementById('cd-err');
+        if (err) err.textContent = 'WRONG PASSWORD';
+        ov.classList.add('shake');
+        setTimeout(function () { ov.classList.remove('shake'); }, 400);
+        if (inp) { inp.value = ''; inp.focus(); }
+      }
+    });
 
     function set(id, v) { var e = document.getElementById(id); if (e) e.textContent = pad(v); }
 
