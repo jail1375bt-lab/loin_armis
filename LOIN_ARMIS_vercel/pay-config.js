@@ -1,2 +1,2 @@
 /* Stripe 公開キー（pk_ で始まる。公開してOKなキー） */
-window.STRIPE_PK = "pk_test_51TkeDTRhxy3ry0A5umQQw1Avph0HDr3rWfXbUjOcJyvOt8SQ5h8PEXX4N1cPl4lXnWAH6GSuoleNnE9AkPjwNLFk00DWlkGVBJ";
+window.STRIPE_PK = "pk_live_51TkeDTRhxy3ry0A559ZU8sqSpg62mC2a7WAAmF4Jobufntj61lY0criFqnAjKCAzabWtJAMq8Acj7gGPvnSO9dTx009yF0miwi";
