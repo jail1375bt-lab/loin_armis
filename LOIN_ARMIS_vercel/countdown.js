@@ -21,6 +21,9 @@
     + "#la-cd{position:fixed;inset:0;z-index:2147483647;background:#f4f4f1;color:#0a0a0a;"
     + "display:flex;flex-direction:column;align-items:center;justify-content:center;"
     + "padding:28px;text-align:center;overflow:hidden}"
+    + "#la-cd,#la-cd *{cursor:auto !important}"
+    + "#la-cd .cd-dot,#la-cd .cd-go{cursor:pointer !important}"
+    + "#la-cd .cd-pass{cursor:text !important}"
     + "#la-cd .cd-logo{width:clamp(190px,44vw,380px);height:auto;display:block;margin:0 0 34px}"
     + "#la-cd .cd-soon{font-family:'LA_OPTITimes',serif;font-size:clamp(25px,7.4vw,72px);"
     + "line-height:1;letter-spacing:.01em;white-space:nowrap;margin:0 0 12px}"
@@ -101,9 +104,7 @@
       var val = (inp && inp.value ? inp.value : '').trim();
       if (val === PREVIEW_PASS) {
         try { localStorage.setItem('la_preview', '1'); } catch (e2) {}
-        ov.remove();
-        document.documentElement.style.overflow = '';
-        document.body.style.overflow = '';
+        window.location.href = 'index.html';
       } else {
         var err = document.getElementById('cd-err');
         if (err) err.textContent = 'WRONG PASSWORD';
