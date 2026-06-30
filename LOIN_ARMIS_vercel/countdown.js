@@ -36,7 +36,11 @@
     + "line-height:1;color:#c9c9c4;align-self:flex-start;margin-top:-2px}"
     + "#la-cd .cd-open{font-family:'LA_Octin',monospace;font-size:clamp(11px,2.8vw,15px);"
     + "letter-spacing:.26em;color:#0a0a0a;margin-top:42px;text-transform:uppercase;padding-left:.26em}"
-    + "#la-cd .cd-gate{display:flex;gap:8px;margin-top:30px;align-items:center}"
+    + "#la-cd .cd-gate{display:none;gap:8px;margin-top:30px;align-items:center}"
+    + "#la-cd .cd-dot{position:absolute;bottom:15px;right:15px;width:15px;height:15px;padding:0;"
+    + "border:1px solid rgba(0,0,0,.12);border-radius:50%;background:transparent;cursor:pointer;"
+    + "opacity:.55;transition:opacity .2s,border-color .2s}"
+    + "#la-cd .cd-dot:hover{opacity:1;border-color:rgba(0,0,0,.4)}"
     + "#la-cd .cd-pass{font-family:'LA_Octin',monospace;font-size:11px;letter-spacing:.18em;"
     + "text-align:center;width:160px;padding:9px 12px;border:1px solid #c9c9c4;border-radius:0;"
     + "background:#fff;color:#0a0a0a;outline:none}"
@@ -75,13 +79,22 @@
         '<input class="cd-pass" id="cd-pass" type="password" inputmode="numeric" placeholder="ADMIN" autocomplete="off">' +
         '<button class="cd-go" type="submit">ENTER</button>' +
       '</form>' +
-      '<div class="cd-err" id="cd-err"></div>';
+      '<div class="cd-err" id="cd-err"></div>' +
+      '<button class="cd-dot" id="cd-dot" type="button" aria-label=" "></button>';
     document.body.appendChild(ov);
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
 
-    // 管理者プレビュー解錠
+    // 右下の目立たないボタンでパスワード欄を表示
+    var dot = document.getElementById('cd-dot');
     var gate = document.getElementById('cd-gate');
+    if (dot) dot.addEventListener('click', function () {
+      if (gate) gate.style.display = 'flex';
+      dot.style.display = 'none';
+      var inp = document.getElementById('cd-pass'); if (inp) inp.focus();
+    });
+
+    // 管理者プレビュー解錠
     if (gate) gate.addEventListener('submit', function (ev) {
       ev.preventDefault();
       var inp = document.getElementById('cd-pass');
