@@ -68,16 +68,18 @@
 
   function byId(list, id){ return list.find(function(x){ return String(x.id) === String(id); }); }
 
-  // 送料設定を取得（settingsテーブル id=1）
+  // 送料設定を取得（settingsテーブル id=1）。海外用の列が無くても壊れないよう全列取得。
   function getSettings(){
-    return sb.from('settings').select('shipping_fee,free_over').eq('id',1).single()
+    return sb.from('settings').select('*').eq('id',1).single()
       .then(function(r){ return (r && r.data) || {shipping_fee:0, free_over:0}; })
       .catch(function(){ return {shipping_fee:0, free_over:0}; });
   }
-  // 小計に対する送料を計算
-  function shipFor(subtotal, st){
+  // 小計と配送先国に対する送料を計算（country が 'JP' 以外なら海外料金）
+  function shipFor(subtotal, st, country){
     st = st || {};
-    var fee = parseInt(st.shipping_fee,10) || 0, fo = parseInt(st.free_over,10) || 0;
+    var intl = !!(country && String(country).toUpperCase() !== 'JP');
+    var fee = intl ? (parseInt(st.ship_intl,10) || 4000) : (parseInt(st.shipping_fee,10) || 0);
+    var fo  = intl ? (parseInt(st.free_over_intl,10) || 40000) : (parseInt(st.free_over,10) || 0);
     if(fee <= 0) return 0;
     if(fo > 0 && subtotal >= fo) return 0;
     return fee;
