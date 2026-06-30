@@ -73,17 +73,28 @@ function startCheckout(){
   var grand=itemsTotal+shipping;
   var shipLabel=shipping>0?('¥'+shipping.toLocaleString()):'FREE';
   var discRow=discount>0?('<div class="row" style="color:var(--accent)"><span>COUPON '+code+'</span><span>−¥'+discount.toLocaleString()+'</span></div>'):'';
-  main.innerHTML='<h1>CHECKOUT</h1>'+rows+'<div class="row"><span>SUBTOTAL</span><span>¥'+total.toLocaleString()+'</span></div>'+discRow+'<div class="row"><span>SHIPPING</span><span>'+shipLabel+'</span></div><div class="total"><span>TOTAL</span><span>¥'+grand.toLocaleString()+'</span></div><form id="pf"><label class="fl">配送先（お名前・ご住所・電話番号）</label><div id="address-element"></div><label class="fl">メールアドレス（領収・コンビニ払い用）</label><input class="fi" id="cEmail" type="email" required autocomplete="email"><label class="fl">お支払い方法</label><div id="payment-element"></div><button class="pay" id="payBtn" type="submit">PAY ¥'+grand.toLocaleString()+'</button><div id="err" class="msg" style="color:var(--accent);padding:12px 0"></div></form>';
+  main.innerHTML='<h1>CHECKOUT</h1>'+rows+'<div class="row"><span>SUBTOTAL</span><span>¥'+total.toLocaleString()+'</span></div>'+discRow+'<div class="row"><span>SHIPPING</span><span id="shipVal">'+shipLabel+'</span></div><div class="total"><span>TOTAL</span><span id="totVal">¥'+grand.toLocaleString()+'</span></div><form id="pf"><label class="fl">配送先（お名前・ご住所・電話番号）</label><div id="address-element"></div><label class="fl">メールアドレス（領収・コンビニ払い用）</label><input class="fi" id="cEmail" type="email" required autocomplete="email"><label class="fl">お支払い方法</label><div id="payment-element"></div><button class="pay" id="payBtn" type="submit">PAY ¥'+grand.toLocaleString()+'</button><div id="err" class="msg" style="color:var(--accent);padding:12px 0"></div></form>';
   if(sessionUser){ var _em=document.getElementById('cEmail'); if(_em&&!_em.value) _em.value=sessionUser.email||''; }
+  var country='JP';
+  function shipForC(c){ var st=shipCfg||{}; var intl=(c&&String(c).toUpperCase()!=='JP'); var fee=intl?(parseInt(st.ship_intl,10)||4000):(parseInt(st.shipping_fee,10)||0); var fo=intl?(parseInt(st.free_over_intl,10)||40000):(parseInt(st.free_over,10)||0); if(fee<=0)return 0; if(fo>0&&itemsTotal>=fo)return 0; return fee; }
+  function redrawShip(c){ var s=shipForC(c); var g=itemsTotal+s; var sv=document.getElementById('shipVal'); if(sv)sv.textContent=s>0?('¥'+s.toLocaleString()):'FREE'; var tv=document.getElementById('totVal'); if(tv)tv.textContent='¥'+g.toLocaleString(); var pb=document.getElementById('payBtn'); if(pb)pb.textContent='PAY ¥'+g.toLocaleString(); }
   var stripe=Stripe(window.STRIPE_PK);
-  fetch('/api/create-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:cart,userId:sessionUser?sessionUser.id:null,email:sessionUser?sessionUser.email:null,coupon:getCoupon()})})
+  var currentPiId=null, elements=null;
+  function updatePI(c){
+    if(!currentPiId) return Promise.resolve();
+    return fetch('/api/create-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:cart,userId:sessionUser?sessionUser.id:null,email:(document.getElementById('cEmail')||{}).value||null,coupon:getCoupon(),country:c,paymentIntentId:currentPiId})})
+     .then(function(r){return r.json();}).then(function(d){ if(d&&!d.error){ redrawShip(c); if(elements&&elements.fetchUpdates){try{elements.fetchUpdates();}catch(e){}} } });
+  }
+  fetch('/api/create-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:cart,userId:sessionUser?sessionUser.id:null,email:sessionUser?sessionUser.email:null,coupon:getCoupon(),country:'JP'})})
    .then(function(r){return r.json();})
    .then(function(d){
      if(d.error){document.getElementById('err').textContent=d.error;return;}
-     var elements=stripe.elements({clientSecret:d.clientSecret,appearance:{theme:'flat'}});
-     var ae=elements.create('address',{mode:'shipping',allowedCountries:['JP'],fields:{phone:'always'},validation:{phone:{required:'always'}},display:{name:'full'}});
+     currentPiId=d.paymentIntentId||null;
+     elements=stripe.elements({clientSecret:d.clientSecret,appearance:{theme:'flat'}});
+     var ae=elements.create('address',{mode:'shipping',fields:{phone:'always'},validation:{phone:{required:'always'}},display:{name:'full'}});
      ae.mount('#address-element');
      var pe=elements.create('payment');pe.mount('#payment-element');
+     ae.on('change',function(ev){ var c=(ev&&ev.value&&ev.value.address&&ev.value.address.country)||'JP'; if(c!==country){ country=c; redrawShip(country); updatePI(country); } });
      document.getElementById('pf').addEventListener('submit',function(e){
        e.preventDefault();
        var btn=document.getElementById('payBtn'); btn.disabled=true;
@@ -92,13 +103,15 @@ function startCheckout(){
        if(!em){ errEl.textContent='メールアドレスを入力してください。'; btn.disabled=false; return; }
        ae.getValue().then(function(addr){
          if(!addr || !addr.complete){ errEl.textContent='配送先住所をすべて入力してください。'; btn.disabled=false; return; }
-         var v=addr.value||{}; var nm=v.name||''; var phone=v.phone||'';
-         window.__laShip={name:nm,phone:phone,address:v.address||{}};
-         stripe.confirmPayment({elements:elements,confirmParams:{return_url:location.origin+'/checkout.html?done=1',payment_method_data:{billing_details:{name:nm,email:em,phone:phone}}},redirect:'if_required'})
-          .then(function(res){
-            if(res.error){errEl.textContent=res.error.message;btn.disabled=false;}
-            else if(res.paymentIntent && (res.paymentIntent.status==='succeeded'||res.paymentIntent.status==='processing')){recordOrder(res.paymentIntent);showDone();}
-          });
+         var v=addr.value||{}; var nm=v.name||''; var phone=v.phone||''; country=(v.address&&v.address.country)||country;
+         window.__laShip={name:nm,phone:phone,address:v.address||{},country:country};
+         updatePI(country).then(function(){
+           stripe.confirmPayment({elements:elements,confirmParams:{return_url:location.origin+'/checkout.html?done=1',payment_method_data:{billing_details:{name:nm,email:em,phone:phone}}},redirect:'if_required'})
+            .then(function(res){
+              if(res.error){errEl.textContent=res.error.message;btn.disabled=false;}
+              else if(res.paymentIntent && (res.paymentIntent.status==='succeeded'||res.paymentIntent.status==='processing')){recordOrder(res.paymentIntent);showDone();}
+            });
+         });
        });
      });
    })
