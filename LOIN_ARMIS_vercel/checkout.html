@@ -73,7 +73,7 @@ function startCheckout(){
   var grand=itemsTotal+shipping;
   var shipLabel=shipping>0?('¥'+shipping.toLocaleString()):'FREE';
   var discRow=discount>0?('<div class="row" style="color:var(--accent)"><span>COUPON '+code+'</span><span>−¥'+discount.toLocaleString()+'</span></div>'):'';
-  main.innerHTML='<h1>CHECKOUT</h1>'+rows+'<div class="row"><span>SUBTOTAL</span><span>¥'+total.toLocaleString()+'</span></div>'+discRow+'<div class="row"><span>SHIPPING</span><span>'+shipLabel+'</span></div><div class="total"><span>TOTAL</span><span>¥'+grand.toLocaleString()+'</span></div><form id="pf"><label class="fl">お名前</label><input class="fi" id="cName" required autocomplete="name"><label class="fl">メールアドレス（領収・コンビニ払い用）</label><input class="fi" id="cEmail" type="email" required autocomplete="email"><div id="payment-element"></div><button class="pay" id="payBtn" type="submit">PAY ¥'+grand.toLocaleString()+'</button><div id="err" class="msg" style="color:var(--accent);padding:12px 0"></div></form>';
+  main.innerHTML='<h1>CHECKOUT</h1>'+rows+'<div class="row"><span>SUBTOTAL</span><span>¥'+total.toLocaleString()+'</span></div>'+discRow+'<div class="row"><span>SHIPPING</span><span>'+shipLabel+'</span></div><div class="total"><span>TOTAL</span><span>¥'+grand.toLocaleString()+'</span></div><form id="pf"><label class="fl">配送先（お名前・ご住所・電話番号）</label><div id="address-element"></div><label class="fl">メールアドレス（領収・コンビニ払い用）</label><input class="fi" id="cEmail" type="email" required autocomplete="email"><label class="fl">お支払い方法</label><div id="payment-element"></div><button class="pay" id="payBtn" type="submit">PAY ¥'+grand.toLocaleString()+'</button><div id="err" class="msg" style="color:var(--accent);padding:12px 0"></div></form>';
   if(sessionUser){ var _em=document.getElementById('cEmail'); if(_em&&!_em.value) _em.value=sessionUser.email||''; }
   var stripe=Stripe(window.STRIPE_PK);
   fetch('/api/create-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:cart,userId:sessionUser?sessionUser.id:null,email:sessionUser?sessionUser.email:null,coupon:getCoupon()})})
@@ -81,16 +81,25 @@ function startCheckout(){
    .then(function(d){
      if(d.error){document.getElementById('err').textContent=d.error;return;}
      var elements=stripe.elements({clientSecret:d.clientSecret,appearance:{theme:'flat'}});
+     var ae=elements.create('address',{mode:'shipping',allowedCountries:['JP'],fields:{phone:'always'},validation:{phone:{required:'always'}},display:{name:'full'}});
+     ae.mount('#address-element');
      var pe=elements.create('payment');pe.mount('#payment-element');
      document.getElementById('pf').addEventListener('submit',function(e){
-       e.preventDefault();document.getElementById('payBtn').disabled=true;
-       var nm=(document.getElementById('cName')||{}).value||'';
+       e.preventDefault();
+       var btn=document.getElementById('payBtn'); btn.disabled=true;
+       var errEl=document.getElementById('err'); errEl.textContent='';
        var em=(document.getElementById('cEmail')||{}).value||'';
-       stripe.confirmPayment({elements:elements,confirmParams:{return_url:location.origin+'/checkout.html?done=1',payment_method_data:{billing_details:{name:nm,email:em}}},redirect:'if_required'})
-        .then(function(res){
-          if(res.error){document.getElementById('err').textContent=res.error.message;document.getElementById('payBtn').disabled=false;}
-          else if(res.paymentIntent && (res.paymentIntent.status==='succeeded'||res.paymentIntent.status==='processing')){recordOrder(res.paymentIntent);showDone();}
-        });
+       if(!em){ errEl.textContent='メールアドレスを入力してください。'; btn.disabled=false; return; }
+       ae.getValue().then(function(addr){
+         if(!addr || !addr.complete){ errEl.textContent='配送先住所をすべて入力してください。'; btn.disabled=false; return; }
+         var v=addr.value||{}; var nm=v.name||''; var phone=v.phone||'';
+         window.__laShip={name:nm,phone:phone,address:v.address||{}};
+         stripe.confirmPayment({elements:elements,confirmParams:{return_url:location.origin+'/checkout.html?done=1',payment_method_data:{billing_details:{name:nm,email:em,phone:phone}}},redirect:'if_required'})
+          .then(function(res){
+            if(res.error){errEl.textContent=res.error.message;btn.disabled=false;}
+            else if(res.paymentIntent && (res.paymentIntent.status==='succeeded'||res.paymentIntent.status==='processing')){recordOrder(res.paymentIntent);showDone();}
+          });
+       });
      });
    })
    .catch(function(){document.getElementById('err').textContent='通信エラー。サーバー関数(/api)が動いているか確認してください。';});
@@ -98,10 +107,11 @@ function startCheckout(){
 function recordOrder(pi){
   if(!sessionUser || !pi || !pi.id) return; // ログイン中のみ。保存はサーバーで検証して行う
   try{
-    var nm=(document.getElementById('cName')||{}).value||'';
+    var ship=window.__laShip||{};
+    var nm=ship.name||'';
     var cart=getCart();
     var orderItems=cart.map(function(c){var p=findP(c.id)||{};return {id:c.id,name:p.n||'',size:c.size||'',price:p.now||0};});
-    fetch('/api/record-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentIntentId:pi.id,items:orderItems,name:nm})}).catch(function(e){console.error('record',e);});
+    fetch('/api/record-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentIntentId:pi.id,items:orderItems,name:nm,shipping:ship})}).catch(function(e){console.error('record',e);});
   }catch(e){console.error('record',e);}
 }
 </script>
