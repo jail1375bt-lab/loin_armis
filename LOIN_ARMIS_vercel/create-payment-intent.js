@@ -19,13 +19,14 @@ module.exports = async (req, res) => {
     if (!items.length) { res.status(400).json({ error: 'cart is empty' }); return; }
     const ids = [...new Set(items.map(it => it.id).filter(v => v !== undefined && v !== null))];
     if (!ids.length) { res.status(400).json({ error: 'cart is empty' }); return; }
-    const url = SB_URL + '/rest/v1/products?id=in.(' + ids.join(',') + ')&select=id,price,sale,sold,stock,size_stock';
+    const url = SB_URL + '/rest/v1/products?id=in.(' + ids.join(',') + ')&select=id,name,price,sale,sold,stock,size_stock';
     const r = await fetch(url, { headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY } });
     if (!r.ok) { res.status(502).json({ error: 'product lookup failed' }); return; }
     const rows = await r.json();
     const map = {};
     rows.forEach(p => { map[String(p.id)] = p; });
     let amount = 0;
+    const itemSummary = [];
     for (const it of items) {
       const p = map[String(it.id)];
       if (!p) continue;
@@ -41,6 +42,7 @@ module.exports = async (req, res) => {
       if (sale < 0) sale = 0; if (sale > 100) sale = 100;
       const unit = sale > 0 ? Math.round((p.price || 0) * (100 - sale) / 100) : (p.price || 0);
       amount += unit;
+      itemSummary.push((p.name || ('#' + it.id)) + (it.size ? (' [' + it.size + ']') : ''));   // 購入商品名＋サイズ
     }
     if (amount <= 0) { res.status(400).json({ error: 'cart is empty' }); return; }
     const subtotal = amount;
@@ -75,10 +77,13 @@ module.exports = async (req, res) => {
     if (body.email)  meta.email   = String(body.email);
     if (code && discount > 0) { meta.coupon = code; meta.discount = String(discount); }
     meta.country = country;
+    meta.items = itemSummary.join(' / ').substring(0, 480);   // 購入商品（Stripeダッシュボードに表示）
+    meta.item_count = String(itemSummary.length);
+    const orderDesc = ('LOIN ARMIS: ' + (itemSummary.join(', ') || 'order')).substring(0, 300);
 
     // 配送先の国が確定した後は、既存の PaymentIntent の金額（送料込み）を更新する
     if (body.paymentIntentId) {
-      const upd = { amount, metadata: meta };
+      const upd = { amount, metadata: meta, description: orderDesc };
       if (body.email) upd.receipt_email = String(body.email);
       const pi = await stripe.paymentIntents.update(String(body.paymentIntentId), upd);
       res.status(200).json({ clientSecret: pi.client_secret, paymentIntentId: pi.id, amount, shipping, subtotal, discount });
@@ -86,7 +91,7 @@ module.exports = async (req, res) => {
     }
 
     // 新規作成（ログイン中の会員情報を Stripe に紐付け＋領収メール）
-    const piParams = { amount, currency: 'jpy', automatic_payment_methods: { enabled: true }, metadata: meta };
+    const piParams = { amount, currency: 'jpy', automatic_payment_methods: { enabled: true }, metadata: meta, description: orderDesc };
     if (body.email) piParams.receipt_email = String(body.email);
     const pi = await stripe.paymentIntents.create(piParams);
     res.status(200).json({ clientSecret: pi.client_secret, paymentIntentId: pi.id, amount, shipping, subtotal, discount });
