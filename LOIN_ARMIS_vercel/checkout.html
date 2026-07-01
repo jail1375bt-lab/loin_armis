@@ -82,7 +82,7 @@ function startCheckout(){
   var currentPiId=null, elements=null;
   function updatePI(c){
     if(!currentPiId) return Promise.resolve();
-    return fetch('/api/create-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:cart,userId:sessionUser?sessionUser.id:null,email:(document.getElementById('cEmail')||{}).value||null,coupon:getCoupon(),country:c,paymentIntentId:currentPiId})})
+    return fetch('/api/create-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:cart,userId:sessionUser?sessionUser.id:null,email:(document.getElementById('cEmail')||{}).value||null,coupon:getCoupon(),country:c,paymentIntentId:currentPiId,shipping:window.__laShip||null})})
      .then(function(r){return r.json();}).then(function(d){ if(d&&!d.error){ redrawShip(c); if(elements&&elements.fetchUpdates){try{elements.fetchUpdates();}catch(e){}} } });
   }
   fetch('/api/create-payment-intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:cart,userId:sessionUser?sessionUser.id:null,email:sessionUser?sessionUser.email:null,coupon:getCoupon(),country:'JP'})})
