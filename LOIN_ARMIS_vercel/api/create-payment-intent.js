@@ -77,13 +77,35 @@ module.exports = async (req, res) => {
     if (body.email)  meta.email   = String(body.email);
     if (code && discount > 0) { meta.coupon = code; meta.discount = String(discount); }
     meta.country = country;
-    meta.items = itemSummary.join(' / ').substring(0, 480);   // 購入商品（Stripeダッシュボードに表示）
+    meta.items = itemSummary.join(' / ').substring(0, 480);   // 購入商品（アプリ/ダッシュボードのMetadataに表示）
     meta.item_count = String(itemSummary.length);
-    const orderDesc = ('LOIN ARMIS: ' + (itemSummary.join(', ') || 'order')).substring(0, 300);
+
+    // 配送先住所を PaymentIntent に紐付け（Shipping details＋Metadataに表示）
+    let shipObj = null;
+    if (body.shipping && body.shipping.address) {
+      const a = body.shipping.address;
+      shipObj = {
+        name: String(body.shipping.name || '').substring(0, 200) || 'Customer',
+        phone: String(body.shipping.phone || ''),
+        address: {
+          line1: String(a.line1 || ''), line2: String(a.line2 || ''),
+          city: String(a.city || ''), state: String(a.state || ''),
+          postal_code: String(a.postal_code || ''), country: String(a.country || '')
+        }
+      };
+      const sa = shipObj.address;
+      meta.ship_to = [shipObj.name, sa.postal_code, sa.state, sa.city, sa.line1, sa.line2, sa.country].filter(Boolean).join(', ').substring(0, 480);
+      if (shipObj.phone) meta.ship_phone = shipObj.phone;
+    }
+
+    // 説明文（Stripeアプリの一覧・詳細に大きく表示）：商品 → 宛先
+    const dest = shipObj ? (' -> ' + [shipObj.address.city, shipObj.address.country].filter(Boolean).join(', ')) : '';
+    const orderDesc = ('LOIN ARMIS: ' + (itemSummary.join(', ') || 'order') + dest).substring(0, 300);
 
     // 配送先の国が確定した後は、既存の PaymentIntent の金額（送料込み）を更新する
     if (body.paymentIntentId) {
       const upd = { amount, metadata: meta, description: orderDesc };
+      if (shipObj) upd.shipping = shipObj;
       if (body.email) upd.receipt_email = String(body.email);
       const pi = await stripe.paymentIntents.update(String(body.paymentIntentId), upd);
       res.status(200).json({ clientSecret: pi.client_secret, paymentIntentId: pi.id, amount, shipping, subtotal, discount });
@@ -92,6 +114,7 @@ module.exports = async (req, res) => {
 
     // 新規作成（ログイン中の会員情報を Stripe に紐付け＋領収メール）
     const piParams = { amount, currency: 'jpy', automatic_payment_methods: { enabled: true }, metadata: meta, description: orderDesc };
+    if (shipObj) piParams.shipping = shipObj;
     if (body.email) piParams.receipt_email = String(body.email);
     const pi = await stripe.paymentIntents.create(piParams);
     res.status(200).json({ clientSecret: pi.client_secret, paymentIntentId: pi.id, amount, shipping, subtotal, discount });
